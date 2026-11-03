@@ -353,10 +353,10 @@ export default function Home() {
             </div>
 
             {/* Main Stage - Scales to Full Screen with Zero Page Scroll */}
-            <div className="flex-1 min-h-0 w-full p-2 sm:p-3 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 overflow-hidden">
-              {/* Left: Shaker + Game Board (Scaled out to 8 cols) */}
+            <div className="flex-1 min-h-0 w-full p-2 sm:p-2.5 flex flex-col md:flex-row gap-2 sm:gap-2.5 overflow-hidden">
+              {/* Left: Shaker + Game Board (Occupies all main space) */}
               <div
-                className={`md:col-span-8 lg:col-span-8 flex flex-col justify-between h-full min-h-0 overflow-hidden ${
+                className={`flex-1 min-w-0 flex flex-col h-full min-h-0 overflow-hidden gap-1.5 ${
                   activeTab !== 'game' ? 'hidden md:flex' : 'flex'
                 }`}
               >
@@ -379,9 +379,9 @@ export default function Home() {
                 />
               </div>
 
-              {/* Right: Players & Chat (ChatBox fills all remaining height!) */}
+              {/* Right: Sidebar - Players & Chat (Proportional compact width: 288px - 320px) */}
               <div
-                className={`md:col-span-4 lg:col-span-4 flex flex-col h-full min-h-0 overflow-hidden gap-2 ${
+                className={`w-full md:w-72 lg:w-80 shrink-0 flex flex-col h-full min-h-0 overflow-hidden gap-1.5 sm:gap-2 ${
                   activeTab === 'game' ? 'hidden md:flex' : 'flex'
                 }`}
               >

@@ -161,7 +161,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       </div>
 
       {/* 6 Animals Grid (2 rows x 3 columns) - Fills Available Height */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 w-full flex-1 min-h-0">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full flex-1 min-h-0">
         {ALL_SYMBOLS.map((symbol) => {
           const meta = SYMBOLS[symbol];
           const summary = getSummary(symbol);
@@ -182,7 +182,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               whileHover={isBetting ? { scale: 1.02 } : {}}
               whileTap={isBetting ? { scale: 0.97 } : {}}
               onClick={() => handleCardClick(symbol)}
-              className={`relative flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-2xl border-2 transition-all cursor-pointer select-none overflow-hidden h-full ${
+              className={`relative flex flex-col items-center justify-between p-1.5 sm:p-2 rounded-2xl border-2 transition-all cursor-pointer select-none overflow-hidden h-full ${
                 isNeonActive
                   ? 'border-yellow-300 ring-4 ring-amber-400 bg-gradient-to-b from-amber-500/35 via-red-950 to-amber-950/50 shadow-[0_0_35px_rgba(245,158,11,1),inset_0_0_20px_rgba(245,158,11,0.5)] scale-105 z-20'
                   : isWinning
@@ -206,7 +206,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               )}
 
               {/* Title Header */}
-              <div className="w-full flex items-center justify-between mb-0.5 px-0.5">
+              <div className="w-full flex items-center justify-between mb-0.5 px-0.5 shrink-0">
                 <span className="text-[11px] sm:text-xs md:text-sm font-black tracking-wider uppercase text-amber-300 flex items-center gap-1">
                   {meta.nameVi}
                 </span>
@@ -217,13 +217,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 )}
               </div>
 
-              {/* 3D Mascot Image - Fits within viewport height */}
-              <div className="relative w-full flex-1 min-h-0 max-h-24 sm:max-h-28 md:max-h-36 aspect-square rounded-xl overflow-hidden my-0.5 shadow-md border border-amber-400/60 bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1 flex items-center justify-center">
-                <img
-                  src={getSymbolImage(symbol)}
-                  alt={meta.nameVi}
-                  className="w-full h-full object-contain rounded-lg transition-transform duration-300 hover:scale-108"
-                />
+              {/* 3D Mascot Image - Dedicated Square Frame, Never Stretched Horizontally! */}
+              <div className="flex-1 min-h-0 w-full flex items-center justify-center my-0.5 overflow-hidden">
+                <div className="relative h-full aspect-square max-h-full max-w-full rounded-2xl overflow-hidden shadow-md border-2 border-amber-400/50 bg-gradient-to-br from-amber-50 via-white to-amber-100 p-1 flex items-center justify-center">
+                  <img
+                    src={getSymbolImage(symbol)}
+                    alt={meta.nameVi}
+                    className="w-full h-full object-contain rounded-xl transition-transform duration-300 hover:scale-108 select-none pointer-events-none drop-shadow"
+                  />
+                </div>
               </div>
 
               {/* Bet Amount Details Footer & Bettor Breakdown Trigger */}

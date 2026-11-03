@@ -173,17 +173,17 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-3 sm:p-3.5 bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border-2 border-amber-500/40 shadow-royal overflow-hidden w-full select-none shrink-0">
+    <div className="relative flex flex-col items-center justify-center p-2 sm:p-2.5 bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border-2 border-amber-500/40 shadow-royal overflow-hidden w-full select-none shrink-0">
       {/* Decorative festive corners */}
-      <div className="absolute top-2 left-2 text-amber-500/40 text-[10px]">❖</div>
-      <div className="absolute top-2 right-2 text-amber-500/40 text-[10px]">❖</div>
-      <div className="absolute bottom-2 left-2 text-amber-500/40 text-[10px]">❖</div>
-      <div className="absolute bottom-2 right-2 text-amber-500/40 text-[10px]">❖</div>
+      <div className="absolute top-1.5 left-1.5 text-amber-500/40 text-[9px]">❖</div>
+      <div className="absolute top-1.5 right-1.5 text-amber-500/40 text-[9px]">❖</div>
+      <div className="absolute bottom-1.5 left-1.5 text-amber-500/40 text-[9px]">❖</div>
+      <div className="absolute bottom-1.5 right-1.5 text-amber-500/40 text-[9px]">❖</div>
 
       {/* Header Status Bar (Clean: Only Round # and Status & Countdown timer) */}
-      <div className="flex items-center justify-between w-full mb-1 px-1">
+      <div className="flex items-center justify-between w-full mb-0.5 px-1">
         <div className="flex items-center space-x-2">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-amber-300 bg-red-900/80 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-sm">
+          <span className="text-xs uppercase tracking-wider font-extrabold text-amber-300 bg-red-900/80 px-2 py-0.5 rounded-full border border-amber-500/40 shadow-sm">
             Ván #{currentRound.roundNumber}
           </span>
           <span className="text-xs font-bold text-amber-100 flex items-center gap-1">
@@ -196,8 +196,8 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
 
         {/* Countdown Badge */}
         {state === 'BETTING' && (
-          <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/60 px-2.5 py-0.5 rounded-full font-mono font-black text-xs shadow-gold-glow animate-pulse">
-            <Clock size={14} />
+          <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/60 px-2 py-0.5 rounded-full font-mono font-black text-xs shadow-gold-glow animate-pulse">
+            <Clock size={13} />
             <span>{timeLeft}s</span>
           </div>
         )}
@@ -205,7 +205,7 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
 
       {/* Main Plate and Bowl Stage with Compact Height for Zero-Scroll Layout */}
       <div
-        className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center my-1"
+        className="relative w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 flex items-center justify-center my-0.5"
         style={{ perspective: 1200 }}
       >
         {/* Shaking vibration shockwave aura around the plate */}
@@ -274,30 +274,30 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                     damping: 14,
                     delay: delays[idx],
                   }}
-                  className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1 shadow-[0_8px_18px_rgba(0,0,0,0.8),0_0_15px_rgba(245,158,11,0.6)] flex flex-col items-center justify-between border border-amber-400"
+                  className="relative w-11 h-11 sm:w-13 sm:h-13 rounded-xl bg-gradient-to-br from-amber-100 via-white to-amber-200 p-0.5 shadow-[0_6px_15px_rgba(0,0,0,0.8),0_0_12px_rgba(245,158,11,0.6)] flex flex-col items-center justify-between border border-amber-400"
                 >
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg overflow-hidden shadow-inner border border-amber-400/50 bg-black/10">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden shadow-inner border border-amber-400/50 bg-black/10">
                     <img
                       src={getSymbolImage(sym)}
                       alt={SYMBOLS[sym].nameVi}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="bg-red-900/90 text-amber-300 text-[8px] sm:text-[9px] font-black px-1 py-0.2 rounded-full border border-amber-400/50 uppercase tracking-tight shadow">
+                  <div className="bg-red-900/90 text-amber-300 text-[7px] sm:text-[8px] font-black px-1 py-0.2 rounded-full border border-amber-400/50 uppercase tracking-tight shadow">
                     {SYMBOLS[sym].nameVi}
                   </div>
                 </motion.div>
               );
             })
           ) : (
-            <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 animate-pulse" />
           )}
         </div>
 
         {/* Ceramic Bowl (Bát úp) with 3D Rotate, Tilt & Open Animation */}
         <AnimatePresence>
           <motion.div
-            className="absolute z-20 w-36 h-36 sm:w-44 sm:h-44 rounded-full flex items-center justify-center select-none"
+            className="absolute z-20 w-28 h-28 sm:w-32 sm:h-32 md:w-34 md:h-34 rounded-full flex items-center justify-center select-none"
             style={{ transformStyle: 'preserve-3d' }}
             animate={
               state === 'ROLLING'
