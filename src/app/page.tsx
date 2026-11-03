@@ -300,19 +300,21 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-tet-bg text-tet-silk">
+    <main className="h-screen max-h-screen overflow-hidden flex flex-col bg-tet-bg text-tet-silk select-none">
       {!room ? (
-        <Lobby
-          player={player}
-          rooms={roomsList}
-          onUpdateProfile={handleUpdateProfile}
-          onCreateRoom={handleCreateRoom}
-          onJoinRoom={handleJoinRoom}
-          onRefreshRooms={handleRefreshRooms}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <Lobby
+            player={player}
+            rooms={roomsList}
+            onUpdateProfile={handleUpdateProfile}
+            onCreateRoom={handleCreateRoom}
+            onJoinRoom={handleJoinRoom}
+            onRefreshRooms={handleRefreshRooms}
+          />
+        </div>
       ) : (
         player && (
-          <div className="flex flex-col min-h-screen">
+          <div className="flex flex-col h-full max-h-screen overflow-hidden">
             <TopBar
               room={room}
               currentPlayer={player}
@@ -321,7 +323,7 @@ export default function Home() {
             />
 
             {/* Mobile Tab Switcher */}
-            <div className="flex md:hidden bg-red-950/90 border-b border-amber-500/20 px-2 py-1 justify-around text-xs font-bold">
+            <div className="flex md:hidden shrink-0 bg-red-950/90 border-b border-amber-500/20 px-2 py-1 justify-around text-xs font-bold">
               <button
                 onClick={() => setActiveTab('game')}
                 className={`py-1.5 px-3 rounded-lg transition ${
@@ -348,11 +350,11 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Main Stage */}
-            <div className="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Left/Center: Game Board & Dice Shaker */}
+            {/* Main Stage - Scales to Full Screen with Zero Page Scroll */}
+            <div className="flex-1 min-h-0 w-full p-2 sm:p-3 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 overflow-hidden">
+              {/* Left: Shaker + Game Board (Scaled out to 8 cols) */}
               <div
-                className={`md:col-span-2 flex flex-col space-y-4 ${
+                className={`md:col-span-8 lg:col-span-8 flex flex-col justify-between h-full min-h-0 overflow-hidden ${
                   activeTab !== 'game' ? 'hidden md:flex' : 'flex'
                 }`}
               >
@@ -372,16 +374,16 @@ export default function Home() {
                 />
               </div>
 
-              {/* Right: Players & Chat */}
+              {/* Right: Players & Chat (ChatBox fills all remaining height!) */}
               <div
-                className={`flex flex-col space-y-4 ${
+                className={`md:col-span-4 lg:col-span-4 flex flex-col h-full min-h-0 overflow-hidden gap-2 ${
                   activeTab === 'game' ? 'hidden md:flex' : 'flex'
                 }`}
               >
-                <div className={activeTab === 'chat' ? 'hidden md:block' : 'block'}>
+                <div className={`${activeTab === 'chat' ? 'hidden md:block' : 'block'} shrink-0`}>
                   <PlayerList room={room} currentPlayer={player} />
                 </div>
-                <div className={activeTab === 'players' ? 'hidden md:block' : 'block'}>
+                <div className={`flex-1 min-h-0 ${activeTab === 'players' ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden`}>
                   <ChatBox
                     messages={chatMessages}
                     currentPlayer={player}

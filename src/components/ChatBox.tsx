@@ -120,7 +120,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   };
 
   return (
-    <div className="relative bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border border-amber-500/40 p-3 shadow-royal flex flex-col h-72 sm:h-80 w-full select-none">
+    <div className="relative bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border border-amber-500/40 p-3 shadow-royal flex flex-col flex-1 min-h-0 h-full w-full select-none overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-500/20 text-xs sm:text-sm font-extrabold text-amber-300">
         <div className="flex items-center space-x-1.5">

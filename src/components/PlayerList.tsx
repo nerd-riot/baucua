@@ -17,9 +17,9 @@ export const PlayerList: React.FC<PlayerListProps> = ({ room, currentPlayer }) =
   };
 
   return (
-    <div className="bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border border-amber-500/40 p-3 shadow-royal w-full select-none">
+    <div className="bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border border-amber-500/40 p-3 shadow-royal w-full select-none shrink-0">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-amber-500/20">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-500/20">
         <span className="text-xs sm:text-sm font-extrabold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
           <Users size={16} className="text-amber-400" /> Người Chơi ({players.length}/{room.maxPlayers})
         </span>
@@ -29,7 +29,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ room, currentPlayer }) =
       </div>
 
       {/* Players List: Clean, responsive vertical stack with smooth scroll */}
-      <div className="flex flex-col space-y-2 max-h-56 sm:max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+      <div className="flex flex-col space-y-1.5 max-h-32 sm:max-h-40 overflow-y-auto pr-1 custom-scrollbar">
         {players.map((p) => {
           const isMe = p.id === currentPlayer.id;
           const isHost = room.hostId === p.id;

@@ -118,10 +118,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center max-w-4xl mx-auto my-3 px-2 select-none">
+    <div className="w-full flex flex-col items-center flex-1 min-h-0 select-none overflow-hidden">
       {/* Chip Selector Bar */}
-      <div className="flex items-center justify-center space-x-3 sm:space-x-6 py-2.5 px-4 mb-3 bg-black/60 rounded-full border border-amber-500/40 shadow-royal">
-        <span className="text-xs sm:text-sm font-bold text-amber-200 hidden xs:inline">
+      <div className="flex items-center justify-center space-x-2.5 sm:space-x-4 py-1.5 px-3.5 mb-1.5 bg-black/60 rounded-full border border-amber-500/40 shadow-royal shrink-0">
+        <span className="text-xs font-bold text-amber-200 hidden xs:inline">
           Chọn mệnh giá:
         </span>
         <div className="flex items-center space-x-2 sm:space-x-3">
@@ -142,14 +142,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     : 'opacity-75 hover:opacity-100'
                 }`}
               >
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-lg border border-amber-300/60 bg-amber-900">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-lg border border-amber-300/60 bg-amber-900">
                   <img
                     src={getChipImage(val)}
                     alt={`Chip ${val}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="absolute text-[11px] sm:text-xs font-black text-amber-100 drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.9)]">
+                <span className="absolute text-[10px] sm:text-[11px] font-black text-amber-100 drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.9)]">
                   {val}
                 </span>
               </motion.button>
@@ -158,8 +158,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         </div>
       </div>
 
-      {/* 6 Animals Grid (2 rows x 3 columns) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4.5 w-full">
+      {/* 6 Animals Grid (2 rows x 3 columns) - Fills Available Height */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 w-full flex-1 min-h-0">
         {ALL_SYMBOLS.map((symbol) => {
           const meta = SYMBOLS[symbol];
           const summary = getSummary(symbol);
@@ -177,10 +177,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           return (
             <motion.div
               key={symbol}
-              whileHover={isBetting ? { scale: 1.025 } : {}}
+              whileHover={isBetting ? { scale: 1.02 } : {}}
               whileTap={isBetting ? { scale: 0.97 } : {}}
               onClick={() => handleCardClick(symbol)}
-              className={`relative flex flex-col items-center justify-between p-3 sm:p-3.5 rounded-2xl border-2 transition-all cursor-pointer select-none overflow-hidden ${
+              className={`relative flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-2xl border-2 transition-all cursor-pointer select-none overflow-hidden h-full ${
                 isNeonActive
                   ? 'border-yellow-300 ring-4 ring-amber-400 bg-gradient-to-b from-amber-500/35 via-red-950 to-amber-950/50 shadow-[0_0_35px_rgba(245,158,11,1),inset_0_0_20px_rgba(245,158,11,0.5)] scale-105 z-20'
                   : isWinning
@@ -190,42 +190,42 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             >
               {/* Neon Border Chase Active Runner Badge */}
               {isChasing && (
-                <div className="absolute top-1.5 left-1.5 z-30 bg-amber-400 text-red-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg flex items-center gap-0.5 animate-bounce">
-                  <Zap size={11} fill="currentColor" />
+                <div className="absolute top-1 left-1 z-30 bg-amber-400 text-red-950 text-[8px] sm:text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-lg flex items-center gap-0.5 animate-bounce">
+                  <Zap size={10} fill="currentColor" />
                   <span>CƯỢC MỞ!</span>
                 </div>
               )}
 
               {/* Winning Star Badge */}
               {isWinning && (
-                <div className="absolute top-1.5 right-1.5 z-20 bg-amber-400 text-red-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-amber-200">
+                <div className="absolute top-1 right-1 z-20 bg-amber-400 text-red-950 text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-lg border border-amber-200">
                   x{winningCount} TRÚNG!
                 </div>
               )}
 
               {/* Title Header */}
-              <div className="w-full flex items-center justify-between mb-1 px-0.5">
-                <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-amber-300 flex items-center gap-1">
+              <div className="w-full flex items-center justify-between mb-0.5 px-0.5">
+                <span className="text-[11px] sm:text-xs md:text-sm font-black tracking-wider uppercase text-amber-300 flex items-center gap-1">
                   {meta.nameVi}
                 </span>
                 {summary.myAmount > 0 && (
-                  <span className="bg-emerald-600 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full shadow border border-emerald-400/60">
+                  <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full shadow border border-emerald-400/60">
                     Cược: {summary.myAmount}
                   </span>
                 )}
               </div>
 
-              {/* 3D Mascot Image - Large, Gilded Porcelain Card Frame */}
-              <div className="relative w-full aspect-square max-w-[170px] sm:max-w-[210px] rounded-2xl overflow-hidden my-1.5 shadow-[0_8px_18px_rgba(0,0,0,0.7)] border-2 border-amber-400/60 bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1.5">
+              {/* 3D Mascot Image - Fits within viewport height */}
+              <div className="relative w-full flex-1 min-h-0 max-h-24 sm:max-h-28 md:max-h-36 aspect-square rounded-xl overflow-hidden my-0.5 shadow-md border border-amber-400/60 bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1 flex items-center justify-center">
                 <img
                   src={getSymbolImage(symbol)}
                   alt={meta.nameVi}
-                  className="w-full h-full object-cover rounded-xl transition-transform duration-300 hover:scale-108"
+                  className="w-full h-full object-contain rounded-lg transition-transform duration-300 hover:scale-108"
                 />
               </div>
 
               {/* Bet Amount Details Footer */}
-              <div className="w-full flex items-center justify-between mt-1 text-[11px] text-amber-200/80 bg-black/60 px-2.5 py-1.5 rounded-xl border border-amber-900/50">
+              <div className="w-full flex items-center justify-between mt-0.5 text-[10px] sm:text-[11px] text-amber-200/80 bg-black/60 px-2 py-0.5 rounded-lg border border-amber-900/50 shrink-0">
                 <span>Tổng cược:</span>
                 <span className="font-black text-amber-300 font-mono">
                   {summary.totalAmount > 0 ? summary.totalAmount.toLocaleString() : '0'} pts

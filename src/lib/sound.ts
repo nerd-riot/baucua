@@ -15,6 +15,7 @@ class SoundEffects {
   private shakeAudio: HTMLAudioElement | null = null;
   private winAudio: HTMLAudioElement | null = null;
   private loseAudio: HTMLAudioElement | null = null;
+  private countDownAudio: HTMLAudioElement | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -43,6 +44,9 @@ class SoundEffects {
 
       this.loseAudio = new Audio('/sounds/lose.mp3');
       this.loseAudio.volume = 0.8;
+
+      this.countDownAudio = new Audio('/sounds/count_down_time_up.mp3');
+      this.countDownAudio.volume = 0.9;
     } catch {}
   }
 
@@ -87,6 +91,7 @@ class SoundEffects {
     if (this.isMuted) {
       this.stopBackgroundMusic();
       this.stopShake();
+      this.stopCountDownTimeUp();
     } else {
       this.startBackgroundMusic();
     }
@@ -104,6 +109,7 @@ class SoundEffects {
     if (this.isMuted) {
       this.stopBackgroundMusic();
       this.stopShake();
+      this.stopCountDownTimeUp();
     } else {
       this.startBackgroundMusic();
     }
@@ -185,6 +191,26 @@ class SoundEffects {
     if (this.loseAudio) {
       this.loseAudio.currentTime = 0;
       this.loseAudio.play().catch(() => {});
+    }
+  }
+
+  /**
+   * Countdown Time Up Sound: /sounds/count_down_time_up.mp3
+   * Plays during the final 3-5s countdown before revealing results!
+   */
+  public playCountDownTimeUp() {
+    this.initAudioElements();
+    if (this.isMuted) return;
+    if (this.countDownAudio) {
+      this.countDownAudio.currentTime = 0;
+      this.countDownAudio.play().catch(() => {});
+    }
+  }
+
+  public stopCountDownTimeUp() {
+    if (this.countDownAudio) {
+      this.countDownAudio.pause();
+      this.countDownAudio.currentTime = 0;
     }
   }
 
