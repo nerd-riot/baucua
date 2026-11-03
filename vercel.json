@@ -1,5 +1,3 @@
 {
-  "buildCommand": "pnpm --filter @bau-cua/web build",
-  "outputDirectory": "apps/web/.next",
   "framework": "nextjs"
 }

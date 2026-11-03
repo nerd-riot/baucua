@@ -1,93 +1,96 @@
-# 🏮 Bầu Cua Online — Trò Chơi Dân Gian Đón Xuân
+# 🏮 Bầu Cua Online — Trò Chơi Dân Gian Đón Xuân (Vercel-Native)
 
-> Trò chơi Bầu Cua Tôm Cá trực tuyến nhiều người chơi (Multiplayer Social Room, 2–30 người), đồ họa Tết Giáp Thìn đậm đà bản sắc Việt, hỗ trợ Guest Nickname (không cần đăng ký tài khoản), luật chơi chặt chẽ, server authoritative và animation mượt mà.
+> Trò chơi Bầu Cua Tôm Cá trực tuyến nhiều người chơi (2–30 người / phòng), đồ họa Tết Giáp Thìn 3D độ phân giải cao (1024x1024), kiến trúc **đơn nhất (Single Next.js App)** triển khai trực tiếp 100% trên Vercel không cần server hay dịch vụ ngoài.
 
 ---
 
 ## 🌟 Tính Năng Nổi Bật
 
-1. **Multiplayer Thời Gian Thực**:
-   - Kiến trúc phòng chơi công khai (Public Room Discovery) và phòng riêng tư (Private Room có mã 6 ký tự + mật khẩu).
-   - Sức chứa linh hoạt từ **2 đến 30 người chơi** mỗi phòng.
-   - Cơ chế **Host Migration**: Khi chủ phòng thoát hoặc mất kết nối, hệ thống tự động chỉ định người chơi kế tiếp làm Host.
-2. **Animation Siêu Mượt & Trải Nghiệm Awesome**:
-   - Bộ linh vật 3D độ phân giải cao **1024x1024** phong cách Tết (Bầu, Cua, Tôm, Cá, Gà, Nai).
-   - Mô phỏng **Bát Úp men hoàng gia & Đĩa sứ hoa sen** rung lắc xóc đĩa (`ROLLING`) và hiệu ứng nhấc bát mở kết quả (`REVEALED`).
-   - Pháo hoa chúc mừng chiến thắng rực rỡ (`canvas-confetti`).
-   - Âm thanh sống động đa tầng bằng **Web Audio API** (không sợ lỗi 404 file mp3, độ trễ 0ms): tiếng lắc xúc xắc xủng xoảng, tiếng đặt phỉnh cược, tiếng chuông thắng trận, tiếng đếm ngược.
-3. **Quy Tắc Kinh Tế & Kiểm Soát Gian Lận Tuyệt Đối**:
-   - Server-side cryptographic RNG (`node:crypto`) quyết định kết quả 3 viên xúc xắc.
-   - Sổ cái điểm bất biến (**Append-Only Ledger**): Khóa điểm cược tức thì (`BET_RESERVE`), không bao giờ bị âm điểm, chống trùng lặp request với `clientBetId` (Idempotency).
+1. **Deploy 1-Click Duy Nhất Trên Vercel**:
+   - Không chia nhiều bục phức tạp (không cần server riêng, không cần Render/Railway/VPS, không cần Supabase/Redis).
+   - Kiến trúc Next.js 15 App Router thuần nhất: Giao diện, âm thanh, game rules, API routes và SSE realtime stream nằm trọn vẹn trong một repository duy nhất.
+2. **Multiplayer Thời Gian Thực (SSE + Heartbeat Sync)**:
+   - Phòng công khai và phòng riêng tư (mã 6 ký tự như `TET888` + mật mã).
+   - Sức chứa **2 đến 30 người chơi** mỗi phòng.
+   - Cơ chế **Host Migration**: Khi chủ phòng thoát, quyền Host tự động chuyển sang người chơi kế tiếp.
+3. **Đồ Họa 3D Tết 1024x1024 & Animation Siêu Mượt**:
+   - 6 linh vật 3D phong cách Tết Việt: Bầu hồ lô, Cua hoàng đế, Tôm biển, Cá chép, Gà trống, Nai vàng.
+   - Bát Úp men hoàng gia rung lắc vật lý khi xóc đĩa (`ROLLING`) và nhấc mở kết quả (`REVEALED`).
+   - Âm thanh Web Audio API đa tầng (0ms độ trễ, không lo lỗi 404 file mp3).
+   - Pháo hoa chúc mừng chiến thắng (`canvas-confetti`).
+4. **Quy Tắc Kinh Tế & Chống Gian Lận Tuyệt Đối**:
+   - Cryptographic RNG sinh ngẫu nhiên 3 viên xúc xắc trên serverless runtime.
+   - Sổ cái điểm bất biến (**Append-Only Ledger**): Khóa điểm cược tức thì (`BET_RESERVE`), chống đặt cược trùng lặp mạng bằng `clientBetId` (Idempotency).
    - Đúng chuẩn kinh tế học truyền thống: Đặt $X$, trúng 1 lần nhận về $2X$ (lãi $+X$), trúng 2 lần nhận về $3X$ (lãi $+2X$), trúng 3 lần nhận về $4X$ (lãi $+3X$).
-4. **Kiến Trúc Tối Giản, Chạy & Deploy Ngay Lập Tức**:
-   - Không yêu cầu cấu hình Supabase phức tạp ở giai đoạn đầu (`In-Memory Ledger & Room State`).
-   - Sẵn sàng tích hợp Supabase PostgreSQL + RLS ở Phase 7 theo đúng thiết kế tại `docs/architecture/ADR-003-data-schema-and-persistence.md`.
 
 ---
 
-## 🏗️ Cấu Trúc Monorepo (pnpm + Turborepo)
+## 📁 Cấu Trúc Dự Án (Single Next.js App)
 
 ```
 baucua/
-├── apps/
-│   ├── web/                    # Next.js 15 App Router + React 19 + Tailwind CSS + Framer Motion
-│   └── server/                 # Fastify / Node http + Socket.io (Authoritative Room Gateway)
-├── packages/
-│   ├── types/                  # Domain Types, Socket Contracts, DTOs
-│   └── engine/                 # Pure TypeScript Rules, Cryptographic RNG, Settlement Math, Ledger
-├── bau_cua_assets/
-│   ├── high_res/               # 12 Asset 3D độ phân giải cao 1024x1024
-│   └── cropped/                # 68 Asset UI gốc đã được cắt chuẩn hóa
-├── docs/
-│   ├── architecture/           # ADR-001 -> ADR-004, Sơ đồ hệ thống Mermaid
-│   └── implementation/         # Implementation Plan, Event Contracts, Asset Catalog
-├── turbo.json                  # Turborepo task pipeline
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── player/reload/route.ts   # Nạp 1,000 điểm miễn phí
+│   │   │   └── rooms/
+│   │   │       ├── route.ts             # Danh sách & tạo phòng
+│   │   │       └── [code]/
+│   │   │           ├── route.ts         # Trạng thái phòng
+│   │   │           ├── join/route.ts    # Vào phòng
+│   │   │           ├── leave/route.ts   # Rời phòng & chuyển Host
+│   │   │           ├── start/route.ts   # Bắt đầu vòng cược
+│   │   │           ├── bet/route.ts     # Đặt cược
+│   │   │           ├── lock/route.ts    # Khóa cược & mở bát
+│   │   │           ├── chat/route.ts    # Chat & sticker
+│   │   │           └── events/route.ts  # Server-Sent Events (SSE)
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/                      # Giao diện bàn cược, đĩa xóc, lobby, chat, v.v.
+│   ├── engine/                          # Thuật toán xúc xắc, FSM, tính tiền thưởng, sổ cái
+│   ├── types/                           # Khai báo TypeScript cho toàn bộ game
+│   └── lib/
+│       ├── game-client.ts               # Client giao tiếp API & SSE stream
+│       ├── room-store.ts                # Quản lý phòng & sự kiện Serverless
+│       └── sound.ts                     # Bộ tổng hợp âm thanh Web Audio API
+├── public/
+│   └── assets/                          # Bộ ảnh 3D và UI đầy đủ
+├── tests/                               # 15 Unit tests cho Game Engine & Room Store
+├── next.config.mjs
+├── tailwind.config.ts
+├── postcss.config.mjs
+├── tsconfig.json
+├── vercel.json
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## 🚀 Khởi Động Nhanh (Local Development)
+## 🚀 Hướng Dẫn Deploy Lên Vercel (Cực Kỳ Đơn Giản)
 
-Yêu cầu: **Node.js >= 20** và **pnpm >= 9**.
+1. Đẩy code lên GitHub (`git push`).
+2. Vào [vercel.com](https://vercel.com) $\to$ Nhấn **Add New Project** $\to$ Chọn repo này.
+3. Nhấn **Deploy** (giữ nguyên mọi thiết lập mặc định, không cần cấu hình thêm bất kỳ cài đặt hay biến môi trường nào!).
+4. Web game sẽ hoạt động ngay lập tức với domain của bạn!
 
-### 1. Cài đặt dependencies:
+---
+
+## 💻 Chạy Tại Máy Local
+
 ```bash
+# 1. Cài đặt dependencies
 pnpm install
-```
 
-### 2. Chạy toàn bộ hệ thống (Web + Realtime Server):
-```bash
+# 2. Khởi động môi trường phát triển
 pnpm dev
-```
-- **Web App**: `http://localhost:3000`
-- **Realtime Server**: `http://localhost:3001` (Endpoint Health: `http://localhost:3001/health`)
 
----
-
-## 🧪 Chạy Test Suite
-
-Toàn bộ logic thanh toán, xác suất xúc xắc, và giao thức realtime đã được kiểm thử:
-
-```bash
+# 3. Chạy toàn bộ 15 bài kiểm thử
 pnpm test
+
+# 4. Build thử nghiệm sản phẩm
+pnpm build
 ```
 
-- **`@bau-cua/engine`**: 10 tests kiểm tra chính xác gross payout, net profit, chặn cược quá số dư, idempotency key.
-- **`@bau-cua/server`**: Integration test kết nối đa client (Host tạo phòng, Player 2 vào cược, đồng bộ số dư thời gian thực).
-
----
-
-## 📦 Triển Khai Trên Vercel (100% Vercel-Native, Không Cần Dịch Vụ Khác)
-
-Dự án được tối ưu hóa đặc biệt để **chạy 100% trực tiếp trên Vercel** mà không cần bất kỳ dịch vụ hay server bên ngoài nào (không cần Render, Railway, Supabase hay Redis):
-- **Serverless API Routes**: Quản lý phòng chơi, tài khoản guest, cược và kết quả mở bát.
-- **Server-Sent Events (SSE) + Snapshot Polling**: Đồng bộ hóa thời gian thực đa người chơi mượt mà với 0ms độ trễ.
-- **Tập tin `vercel.json`** đã được cấu hình sẵn tại thư mục gốc của repository.
-
-### Các bước deploy lên Vercel:
-1. Đẩy code lên GitHub repository của bạn (`git push`).
-2. Truy cập [vercel.com](https://vercel.com) -> **Add New Project** -> Chọn repository này.
-3. Nhấn **Deploy** (giữ nguyên mọi thiết lập mặc định, không cần cấu hình thêm bất kỳ biến môi trường nào!).
-4. Web game sẽ lập tức hoạt động đầy đủ tính năng multiplayer!
+Mở trình duyệt tại [http://localhost:3000](http://localhost:3000) để trải nghiệm.
