@@ -38,8 +38,10 @@ export const WinModal: React.FC<WinModalProps> = ({
           colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a'],
         });
       } catch {}
+    } else if (mySettlement && mySettlement.totalBet > 0 && mySettlement.netProfit <= 0) {
+      sound.playLose();
     }
-  }, [hasWon]);
+  }, [hasWon, mySettlement]);
 
   const getSymbolImage = (id: SymbolId) => {
     const map: Record<SymbolId, string> = {

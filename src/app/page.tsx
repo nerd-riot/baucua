@@ -12,6 +12,7 @@ import {
   SymbolId,
 } from '@/types';
 import { GameClient } from '@/lib/game-client';
+import { sound } from '@/lib/sound';
 import { Lobby } from '@/components/Lobby';
 import { TopBar } from '@/components/TopBar';
 import { DiceShaker } from '@/components/DiceShaker';
@@ -65,6 +66,9 @@ export default function Home() {
 
     // Refresh rooms list
     GameClient.listRooms().then((rooms) => setRoomsList(rooms));
+
+    // Start background game music on user readiness
+    sound.startBackgroundMusic();
   }, []);
 
   // Periodic lobby refresh when outside room

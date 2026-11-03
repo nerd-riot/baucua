@@ -1,6 +1,6 @@
 /**
- * Web Audio API Sound Effects Synthesizer for Bầu Cua Online.
- * Zero external audio files required, zero latency, guaranteed to work across browsers!
+ * Web Audio API & Audio Asset Manager for Bầu Cua Online.
+ * Plays high-fidelity sound assets from /sounds/ with Web Audio synthesizer fallbacks.
  */
 
 type SoundListener = (muted: boolean) => void;
@@ -9,6 +9,12 @@ class SoundEffects {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
   private listeners = new Set<SoundListener>();
+
+  // Real Audio Elements
+  private bgAudio: HTMLAudioElement | null = null;
+  private shakeAudio: HTMLAudioElement | null = null;
+  private winAudio: HTMLAudioElement | null = null;
+  private loseAudio: HTMLAudioElement | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -19,6 +25,25 @@ class SoundEffects {
         }
       } catch {}
     }
+  }
+
+  private initAudioElements() {
+    if (typeof window === 'undefined' || this.bgAudio) return;
+    try {
+      this.bgAudio = new Audio('/sounds/background.mp3');
+      this.bgAudio.loop = true;
+      this.bgAudio.volume = 0.35;
+
+      this.shakeAudio = new Audio('/sounds/shake.mp3');
+      this.shakeAudio.loop = true;
+      this.shakeAudio.volume = 0.85;
+
+      this.winAudio = new Audio('/sounds/coin-collect.mp3');
+      this.winAudio.volume = 0.9;
+
+      this.loseAudio = new Audio('/sounds/lose.mp3');
+      this.loseAudio.volume = 0.8;
+    } catch {}
   }
 
   public subscribe(fn: SoundListener): () => void {
@@ -39,7 +64,9 @@ class SoundEffects {
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
@@ -57,6 +84,12 @@ class SoundEffects {
         localStorage.setItem('bau_cua_muted', String(this.isMuted));
       } catch {}
     }
+    if (this.isMuted) {
+      this.stopBackgroundMusic();
+      this.stopShake();
+    } else {
+      this.startBackgroundMusic();
+    }
     this.notify();
     return this.isMuted;
   }
@@ -68,11 +101,91 @@ class SoundEffects {
         localStorage.setItem('bau_cua_muted', String(this.isMuted));
       } catch {}
     }
+    if (this.isMuted) {
+      this.stopBackgroundMusic();
+      this.stopShake();
+    } else {
+      this.startBackgroundMusic();
+    }
     this.notify();
   }
 
   public getMuted(): boolean {
     return this.isMuted;
+  }
+
+  /**
+   * Background Music: /sounds/background.mp3 (loops continuously)
+   */
+  public startBackgroundMusic() {
+    this.initAudioElements();
+    if (this.isMuted || !this.bgAudio) return;
+
+    this.bgAudio.play().catch(() => {
+      // Browser autoplay policy: wait for first user gesture
+      const unlockAudio = () => {
+        if (!this.isMuted && this.bgAudio) {
+          this.bgAudio.play().catch(() => {});
+        }
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+        window.removeEventListener('keydown', unlockAudio);
+      };
+      window.addEventListener('click', unlockAudio, { once: true });
+      window.addEventListener('touchstart', unlockAudio, { once: true });
+      window.addEventListener('keydown', unlockAudio, { once: true });
+    });
+  }
+
+  public stopBackgroundMusic() {
+    if (this.bgAudio) {
+      this.bgAudio.pause();
+    }
+  }
+
+  /**
+   * Shake Sound: /sounds/shake.mp3
+   * Automatically loops and repeats for the exact duration of the shake action!
+   */
+  public startShake() {
+    this.initAudioElements();
+    if (this.isMuted) return;
+    if (this.shakeAudio) {
+      this.shakeAudio.currentTime = 0;
+      this.shakeAudio.loop = true;
+      this.shakeAudio.play().catch(() => {});
+    }
+  }
+
+  public stopShake() {
+    if (this.shakeAudio) {
+      this.shakeAudio.pause();
+      this.shakeAudio.currentTime = 0;
+    }
+  }
+
+  /**
+   * Win Sound: /sounds/coin-collect.mp3 (Chiến thắng)
+   */
+  public playWin() {
+    this.initAudioElements();
+    if (this.isMuted) return;
+    if (this.winAudio) {
+      this.winAudio.currentTime = 0;
+      this.winAudio.play().catch(() => {});
+    }
+  }
+
+  /**
+   * Lose Sound: /sounds/lose.mp3 (Thua cuộc)
+   */
+  public playLose() {
+    this.initAudioElements();
+    if (this.isMuted) return;
+    if (this.loseAudio) {
+      this.loseAudio.currentTime = 0;
+      this.loseAudio.play().catch(() => {});
+    }
   }
 
   /**
@@ -101,57 +214,6 @@ class SoundEffects {
   }
 
   /**
-   * Dice shaking in bowl sound
-   */
-  public playDiceShake() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
-
-    for (let i = 0; i < 5; i++) {
-      setTimeout(() => {
-        if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(300 + Math.random() * 400, ctx.currentTime);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.05);
-      }, i * 70);
-    }
-  }
-
-  /**
-   * Festive Win Fanfare / Chime
-   */
-  public playWin() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
-
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.35);
-      }, idx * 100);
-    });
-  }
-
-  /**
    * Dramatic Bowl Open / Whoosh sound
    */
   public playBowlOpen() {
@@ -159,7 +221,6 @@ class SoundEffects {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    // Resonant chime sweep
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -209,14 +270,13 @@ class SoundEffects {
     const ctx = this.getContext();
     if (!ctx) return;
 
-    // Initial pop
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(450, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.08);
 
-    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
 
     osc.connect(gain);
@@ -224,23 +284,6 @@ class SoundEffects {
 
     osc.start();
     osc.stop(ctx.currentTime + 0.12);
-
-    // Follow-up sparkle crackles
-    for (let i = 1; i <= 3; i++) {
-      setTimeout(() => {
-        if (!ctx || this.isMuted) return;
-        const cOsc = ctx.createOscillator();
-        const cGain = ctx.createGain();
-        cOsc.type = 'square';
-        cOsc.frequency.setValueAtTime(1200 + Math.random() * 800, ctx.currentTime);
-        cGain.gain.setValueAtTime(0.12, ctx.currentTime);
-        cGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
-        cOsc.connect(cGain);
-        cGain.connect(ctx.destination);
-        cOsc.start();
-        cOsc.stop(ctx.currentTime + 0.04);
-      }, i * 50);
-    }
   }
 
   /**

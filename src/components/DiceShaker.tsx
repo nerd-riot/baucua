@@ -117,14 +117,15 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
     return () => clearInterval(interval);
   }, [state, currentRound.bettingEndsAt, isHost, onLockBetting]);
 
-  // Handle ROLLING state: Rattle sound loop
+  // Handle ROLLING state: Play looping shake.mp3 sound
   useEffect(() => {
     if (state === 'ROLLING') {
-      sound.playDiceShake();
-      const interval = setInterval(() => {
-        sound.playDiceShake();
-      }, 650);
-      return () => clearInterval(interval);
+      sound.startShake();
+      return () => {
+        sound.stopShake();
+      };
+    } else {
+      sound.stopShake();
     }
   }, [state]);
 
