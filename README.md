@@ -79,14 +79,15 @@ pnpm test
 
 ---
 
-## 📦 Triển Khai Sản Phẩm (Production Deployment)
+## 📦 Triển Khai Trên Vercel (100% Vercel-Native, Không Cần Dịch Vụ Khác)
 
-### Cách 1: Chạy bằng Docker
-```bash
-docker build -t baucua-online .
-docker run -p 3000:3000 -p 3001:3001 baucua-online
-```
+Dự án được tối ưu hóa đặc biệt để **chạy 100% trực tiếp trên Vercel** mà không cần bất kỳ dịch vụ hay server bên ngoài nào (không cần Render, Railway, Supabase hay Redis):
+- **Serverless API Routes**: Quản lý phòng chơi, tài khoản guest, cược và kết quả mở bát.
+- **Server-Sent Events (SSE) + Snapshot Polling**: Đồng bộ hóa thời gian thực đa người chơi mượt mà với 0ms độ trễ.
+- **Tập tin `vercel.json`** đã được cấu hình sẵn tại thư mục gốc của repository.
 
-### Cách 2: Triển khai Độc Lập
-- **Apps/Web**: Deploy lên [Vercel](https://vercel.com) với biến môi trường `NEXT_PUBLIC_SOCKET_URL=https://your-server-domain.com`.
-- **Apps/Server**: Deploy lên [Render](https://render.com), [Railway](https://railway.app), hoặc [Fly.io] với lệnh `pnpm --filter @bau-cua/server start`.
+### Các bước deploy lên Vercel:
+1. Đẩy code lên GitHub repository của bạn (`git push`).
+2. Truy cập [vercel.com](https://vercel.com) -> **Add New Project** -> Chọn repository này.
+3. Nhấn **Deploy** (giữ nguyên mọi thiết lập mặc định, không cần cấu hình thêm bất kỳ biến môi trường nào!).
+4. Web game sẽ lập tức hoạt động đầy đủ tính năng multiplayer!

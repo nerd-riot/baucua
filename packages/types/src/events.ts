@@ -1,8 +1,8 @@
-import { Player } from './player.js';
-import { Room, RoomSummary } from './room.js';
-import { Bet, BoardBetSummary, PlaceBetRequest } from './bet.js';
-import { DiceResult, PlayerSettlement, Round, RoundState } from './round.js';
-import { SymbolId } from './symbols.js';
+import { Player } from './player';
+import { Room, RoomSummary } from './room';
+import { Bet, BoardBetSummary, PlaceBetRequest } from './bet';
+import { DiceResult, PlayerSettlement, Round, RoundState } from './round';
+import { SymbolId } from './symbols';
 
 export interface ChatMessage {
   id: string;

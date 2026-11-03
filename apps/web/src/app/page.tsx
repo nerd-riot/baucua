@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   BoardBetSummary,
   ChatMessage,
@@ -11,7 +11,7 @@ import {
   RoomSummary,
   SymbolId,
 } from '@bau-cua/types';
-import { getSocket } from '@/lib/socket';
+import { GameClient } from '@/lib/game-client';
 import { Lobby } from '@/components/Lobby';
 import { TopBar } from '@/components/TopBar';
 import { DiceShaker } from '@/components/DiceShaker';
@@ -29,11 +29,8 @@ export default function Home() {
   const [showWinModal, setShowWinModal] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'game' | 'players' | 'chat'>('game');
 
-  // Initialize socket & guest login
+  // Load guest profile from localStorage
   useEffect(() => {
-    const socket = getSocket();
-
-    // Retrieve or generate persistent guest device ID
     let deviceId = '';
     if (typeof window !== 'undefined') {
       deviceId = localStorage.getItem('bau_cua_device_id') || '';
@@ -52,254 +49,231 @@ export default function Home() {
         ? localStorage.getItem('bau_cua_avatar') || 'char_boy_ao_dai_xanh'
         : 'char_boy_ao_dai_xanh';
 
-    socket.emit(
-      'guest:login',
-      { nickname: savedNickname, avatarId: savedAvatarId, deviceId },
-      (res) => {
-        if (res.success && res.player) {
-          setPlayer(res.player);
+    setPlayer({
+      id: 'p_' + deviceId,
+      nickname: savedNickname,
+      avatarId: savedAvatarId,
+      deviceId,
+      points: 1000,
+      isReady: false,
+      isHost: false,
+      connected: true,
+      joinedAt: Date.now(),
+      lastActiveAt: Date.now(),
+    });
+
+    // Refresh rooms list
+    GameClient.listRooms().then((rooms) => setRoomsList(rooms));
+  }, []);
+
+  // Periodic lobby refresh when outside room
+  useEffect(() => {
+    if (room) return;
+    const interval = setInterval(() => {
+      GameClient.listRooms().then((rooms) => setRoomsList(rooms));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [room]);
+
+  // Subscribe to real-time room events (SSE + polling) when inside room
+  useEffect(() => {
+    if (!room) return;
+
+    const unsubscribe = GameClient.subscribeToRoom(room.code, {
+      onStateSync: (syncedRoom, summary, messages) => {
+        setRoom(syncedRoom);
+        setBoardSummary(summary);
+        if (messages && messages.length > 0) setChatMessages(messages);
+
+        if (player && syncedRoom.players[player.id]) {
+          setPlayer((prev) => (prev ? { ...prev, points: syncedRoom.players[player.id].points } : null));
         }
-      }
-    );
+      },
+      onPlayerJoined: (newPlayer) => {
+        setRoom((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            players: { ...prev.players, [newPlayer.id]: newPlayer },
+          };
+        });
+      },
+      onPlayerLeft: ({ playerId, newHostId }) => {
+        setRoom((prev) => {
+          if (!prev) return null;
+          const nextPlayers = { ...prev.players };
+          delete nextPlayers[playerId];
+          return {
+            ...prev,
+            hostId: newHostId || prev.hostId,
+            players: nextPlayers,
+          };
+        });
+      },
+      onRoundStarted: ({ roundId, roundNumber, bettingEndsAt }) => {
+        setShowWinModal(false);
+        setBoardSummary([]);
+        setRoom((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            currentRound: {
+              ...prev.currentRound,
+              id: roundId,
+              roundNumber,
+              state: 'BETTING',
+              bettingEndsAt,
+              diceResult: undefined,
+              settlements: undefined,
+            },
+          };
+        });
+      },
+      onBetPlaced: ({ boardSummary: newSummary }) => {
+        setBoardSummary(newSummary);
+      },
+      onRolling: () => {
+        setRoom((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            currentRound: {
+              ...prev.currentRound,
+              state: 'ROLLING',
+            },
+          };
+        });
+      },
+      onSettled: ({ diceResult, settlements, boardSummary: finalSummary }) => {
+        setBoardSummary(finalSummary);
+        setRoom((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            currentRound: {
+              ...prev.currentRound,
+              state: 'REVEALED',
+              diceResult,
+              settlements,
+            },
+          };
+        });
 
-    // Initial rooms fetch
-    socket.emit('lobby:listRooms', (res) => {
-      if (res.success) {
-        setRoomsList(res.rooms);
-      }
-    });
-
-    // Listeners
-    socket.on('lobby:roomsUpdated', (rooms: RoomSummary[]) => {
-      setRoomsList(rooms);
-    });
-
-    socket.on('room:stateSync', (updatedRoom: Room) => {
-      setRoom(updatedRoom);
-      if (player && updatedRoom.players[player.id]) {
-        setPlayer((prev) => (prev ? { ...prev, points: updatedRoom.players[player.id].points } : null));
-      }
-    });
-
-    socket.on('room:playerJoined', (newPlayer: Player) => {
-      setRoom((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          players: { ...prev.players, [newPlayer.id]: newPlayer },
-        };
-      });
-    });
-
-    socket.on('room:playerLeft', ({ playerId, newHostId }) => {
-      setRoom((prev) => {
-        if (!prev) return null;
-        const nextPlayers = { ...prev.players };
-        delete nextPlayers[playerId];
-        return {
-          ...prev,
-          hostId: newHostId || prev.hostId,
-          players: nextPlayers,
-        };
-      });
-    });
-
-    socket.on('round:started', ({ roundId, roundNumber, bettingEndsAt }) => {
-      setShowWinModal(false);
-      setBoardSummary([]);
-      setRoom((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          currentRound: {
-            ...prev.currentRound,
-            id: roundId,
-            roundNumber,
-            state: 'BETTING',
-            bettingEndsAt,
-            diceResult: undefined,
-            settlements: undefined,
-          },
-        };
-      });
-    });
-
-    socket.on('round:betPlaced', ({ boardSummary: newSummary }) => {
-      setBoardSummary(newSummary);
-    });
-
-    socket.on('round:rolling', () => {
-      setRoom((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          currentRound: {
-            ...prev.currentRound,
-            state: 'ROLLING',
-          },
-        };
-      });
-    });
-
-    socket.on('round:settled', ({ diceResult, settlements, boardSummary: finalSummary }) => {
-      setBoardSummary(finalSummary);
-      setRoom((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          currentRound: {
-            ...prev.currentRound,
-            state: 'REVEALED',
-            diceResult,
-            settlements,
-          },
-        };
-      });
-
-      // Update current player balance from settlement
-      if (player) {
-        const mySettlement = settlements.find((s) => s.playerId === player.id);
-        if (mySettlement) {
-          setPlayer((prev) => (prev ? { ...prev, points: mySettlement.newBalance } : null));
+        if (player) {
+          const mySettlement = settlements.find((s) => s.playerId === player.id);
+          if (mySettlement) {
+            setPlayer((prev) => (prev ? { ...prev, points: mySettlement.newBalance } : null));
+          }
         }
-      }
-
-      setShowWinModal(true);
-    });
-
-    socket.on('chat:message', (msg: ChatMessage) => {
-      setChatMessages((prev) => [...prev.slice(-49), msg]);
+        setShowWinModal(true);
+      },
+      onChatMessage: (msg) => {
+        setChatMessages((prev) => [...prev.slice(-49), msg]);
+      },
     });
 
     return () => {
-      socket.off('lobby:roomsUpdated');
-      socket.off('room:stateSync');
-      socket.off('room:playerJoined');
-      socket.off('room:playerLeft');
-      socket.off('round:started');
-      socket.off('round:betPlaced');
-      socket.off('round:rolling');
-      socket.off('round:settled');
-      socket.off('chat:message');
+      unsubscribe();
     };
-  }, []);
+  }, [room?.code, player?.id]);
 
   const handleUpdateProfile = (nickname: string, avatarId: string) => {
-    const socket = getSocket();
-    const deviceId = localStorage.getItem('bau_cua_device_id') || 'dev_guest';
     localStorage.setItem('bau_cua_nickname', nickname);
     localStorage.setItem('bau_cua_avatar', avatarId);
-
-    socket.emit('guest:login', { nickname, avatarId, deviceId }, (res) => {
-      if (res.success && res.player) {
-        setPlayer(res.player);
-      }
-    });
+    setPlayer((prev) => (prev ? { ...prev, nickname, avatarId } : null));
   };
 
-  const handleCreateRoom = (options: {
+  const handleCreateRoom = async (options: {
     name: string;
     isPrivate: boolean;
     passcode?: string;
     maxPlayers: number;
   }) => {
-    const socket = getSocket();
-    socket.emit('room:create', options, (res) => {
-      if (res.success && res.room) {
-        setRoom(res.room);
-        setChatMessages([]);
-      } else {
-        alert(res.error || 'Tạo phòng thất bại');
-      }
-    });
-  };
+    if (!player) return;
+    const res = await GameClient.createRoom(
+      { nickname: player.nickname, avatarId: player.avatarId, deviceId: player.deviceId },
+      options
+    );
 
-  const handleJoinRoom = (roomIdOrCode: string, passcode?: string) => {
-    const socket = getSocket();
-    socket.emit('room:join', { roomIdOrCode, passcode }, (res) => {
-      if (res.success && res.room) {
-        setRoom(res.room);
-        setChatMessages([]);
-      } else {
-        alert(res.error || 'Vào phòng thất bại');
-      }
-    });
-  };
-
-  const handleLeaveRoom = () => {
-    const socket = getSocket();
-    socket.emit('room:leave', () => {
-      setRoom(null);
-      setBoardSummary([]);
+    if (res.success && res.room && res.player) {
+      setPlayer(res.player);
+      setRoom(res.room);
       setChatMessages([]);
-      setShowWinModal(false);
-      // Refresh lobby rooms
-      socket.emit('lobby:listRooms', (res) => {
-        if (res.success) setRoomsList(res.rooms);
-      });
-    });
+    } else {
+      alert(res.error || 'Tạo phòng thất bại');
+    }
   };
 
-  const handleStartRound = () => {
-    const socket = getSocket();
-    socket.emit('host:startRound', (res) => {
-      if (!res.success) {
-        alert(res.error || 'Không thể bắt đầu vòng');
-      }
-    });
+  const handleJoinRoom = async (roomIdOrCode: string, passcode?: string) => {
+    if (!player) return;
+    const res = await GameClient.joinRoom(
+      roomIdOrCode,
+      { nickname: player.nickname, avatarId: player.avatarId, deviceId: player.deviceId },
+      passcode
+    );
+
+    if (res.success && res.room && res.player) {
+      setPlayer(res.player);
+      setRoom(res.room);
+      setChatMessages([]);
+    } else {
+      alert(res.error || 'Vào phòng thất bại');
+    }
   };
 
-  const handleLockBetting = () => {
-    const socket = getSocket();
-    socket.emit('host:lockBetting', (res) => {
-      if (!res.success) {
-        alert(res.error || 'Không thể khóa cược');
-      }
-    });
+  const handleLeaveRoom = async () => {
+    if (!room || !player) return;
+    await GameClient.leaveRoom(room.code, player.id);
+    setRoom(null);
+    setBoardSummary([]);
+    setChatMessages([]);
+    setShowWinModal(false);
+    const rooms = await GameClient.listRooms();
+    setRoomsList(rooms);
   };
 
-  const handlePlaceBet = (symbol: SymbolId, amount: number) => {
+  const handleStartRound = async () => {
     if (!room) return;
-    const socket = getSocket();
+    const res = await GameClient.startRound(room.code);
+    if (!res.success) {
+      alert(res.error || 'Không thể bắt đầu vòng');
+    }
+  };
+
+  const handleLockBetting = async () => {
+    if (!room) return;
+    const res = await GameClient.lockAndRoll(room.code);
+    if (!res.success) {
+      alert(res.error || 'Không thể khóa cược');
+    }
+  };
+
+  const handlePlaceBet = async (symbol: SymbolId, amount: number) => {
+    if (!room || !player) return;
     const clientBetId = crypto.randomUUID();
 
-    socket.emit(
-      'bet:place',
-      {
-        roomId: room.id,
-        symbol,
-        amount,
-        clientBetId,
-      },
-      (res) => {
-        if (res.success && res.newBalance !== undefined) {
-          setPlayer((prev) => (prev ? { ...prev, points: res.newBalance! } : null));
-        } else if (res.error) {
-          alert(res.error);
-        }
-      }
-    );
+    const res = await GameClient.placeBet(room.code, player.id, symbol, amount, clientBetId);
+    if (res.success && res.newBalance !== undefined) {
+      setPlayer((prev) => (prev ? { ...prev, points: res.newBalance! } : null));
+    } else if (res.error) {
+      alert(res.error);
+    }
   };
 
   const handleSendMessage = (text?: string, stickerId?: string) => {
-    const socket = getSocket();
-    socket.emit('chat:send', { text, stickerId }, () => {});
+    if (!room || !player) return;
+    GameClient.sendChat(room.code, player.id, text, stickerId);
   };
 
-  const handleReloadPoints = () => {
-    const socket = getSocket();
-    socket.emit('player:reloadPoints', (res) => {
-      if (res.success) {
-        setPlayer((prev) => (prev ? { ...prev, points: res.newBalance } : null));
-      }
-    });
+  const handleReloadPoints = async () => {
+    if (!player) return;
+    const newBal = await GameClient.reloadPoints(player.deviceId);
+    setPlayer((prev) => (prev ? { ...prev, points: newBal } : null));
   };
 
-  const handleRefreshRooms = () => {
-    const socket = getSocket();
-    socket.emit('lobby:listRooms', (res) => {
-      if (res.success) setRoomsList(res.rooms);
-    });
+  const handleRefreshRooms = async () => {
+    const rooms = await GameClient.listRooms();
+    setRoomsList(rooms);
   };
 
   return (

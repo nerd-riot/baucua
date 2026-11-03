@@ -1,5 +1,5 @@
-import { Player } from './player.js';
-import { Round } from './round.js';
+import { Player } from './player';
+import { Round } from './round';
 
 export interface RoomConfig {
   name: string;

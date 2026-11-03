@@ -1,4 +1,4 @@
-import { SymbolId } from './symbols.js';
+import { SymbolId } from './symbols';
 
 export type RoundState =
   | 'WAITING'   // Waiting for host to initiate round
