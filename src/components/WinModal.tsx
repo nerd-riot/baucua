@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerSettlement, Round, SYMBOLS, SymbolId } from '@/types';
 import { sound } from '@/lib/sound';
-import { Trophy, Award } from 'lucide-react';
+import { Trophy, Award, X } from 'lucide-react';
 
 interface WinModalProps {
   round: Round;
@@ -62,6 +62,17 @@ export const WinModal: React.FC<WinModalProps> = ({
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           className="relative w-full max-w-md bg-gradient-to-b from-red-950 via-tet-card to-black rounded-3xl border-2 border-amber-400 p-6 shadow-royal text-center overflow-hidden"
         >
+          {/* Close button in top-right */}
+          <button
+            onClick={() => {
+              sound.playChip();
+              onClose();
+            }}
+            className="absolute top-4 right-4 text-amber-400/70 hover:text-amber-200 p-1.5 rounded-full hover:bg-white/10 transition active:scale-95"
+            aria-label="Đóng"
+          >
+            <X size={20} />
+          </button>
           {/* Header Graphic / Icon */}
           <div className="flex justify-center mb-3">
             {hasWon ? (

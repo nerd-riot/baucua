@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Phòng không tồn tại' }, { status: 404 });
     }
 
-    const result = store.lockAndRoll(room.id);
+    const result = await store.lockAndRoll(room.id);
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }

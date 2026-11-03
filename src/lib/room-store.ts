@@ -308,23 +308,36 @@ class VercelRoomStore {
     }
   }
 
-  public lockAndRoll(roomId: string): {
+  public async lockAndRoll(
+    roomId: string,
+    waitDurationMs: number = 3800
+  ): Promise<{
     success: boolean;
     diceResult?: DiceResult;
     settlements?: PlayerSettlement[];
     error?: string;
-  } {
+  }> {
     const room = this.rooms.get(roomId);
     if (!room) return { success: false, error: 'Phòng không tồn tại' };
 
     const round = room.currentRound;
-    round.state = 'ROLLING';
-    const shakingDurationMs = 3500;
+    if (round.state !== 'BETTING') {
+      return { success: false, error: 'Vòng không ở trạng thái đặt cược' };
+    }
 
+    round.state = 'ROLLING';
+    room.updatedAt = Date.now();
+
+    // Broadcast shaking state to all SSE subscribers
     this.emitEvent(room.id, 'round:rolling', {
       roundId: round.id,
-      shakingDurationMs,
+      shakingDurationMs: waitDurationMs,
     });
+
+    // Hold connection during suspenseful 3D shaking phase
+    if (waitDurationMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, waitDurationMs));
+    }
 
     // Roll cryptographic dice
     const diceResult = rollDice();

@@ -27,6 +27,7 @@ export default function Home() {
   const [boardSummary, setBoardSummary] = useState<BoardBetSummary[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWinModal, setShowWinModal] = useState<boolean>(false);
+  const winModalTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [activeTab, setActiveTab] = useState<'game' | 'players' | 'chat'>('game');
 
   // Load guest profile from localStorage
@@ -111,6 +112,10 @@ export default function Home() {
         });
       },
       onRoundStarted: ({ roundId, roundNumber, bettingEndsAt }) => {
+        if (winModalTimerRef.current) {
+          clearTimeout(winModalTimerRef.current);
+          winModalTimerRef.current = null;
+        }
         setShowWinModal(false);
         setBoardSummary([]);
         setRoom((prev) => {
@@ -133,6 +138,11 @@ export default function Home() {
         setBoardSummary(newSummary);
       },
       onRolling: () => {
+        if (winModalTimerRef.current) {
+          clearTimeout(winModalTimerRef.current);
+          winModalTimerRef.current = null;
+        }
+        setShowWinModal(false);
         setRoom((prev) => {
           if (!prev) return null;
           return {
@@ -165,7 +175,13 @@ export default function Home() {
             setPlayer((prev) => (prev ? { ...prev, points: mySettlement.newBalance } : null));
           }
         }
-        setShowWinModal(true);
+
+        // Suspense timing: delay WinModal by 4.5s so players enjoy the dramatic bowl opening,
+        // 3D dice tumbling onto the plate, and fireworks!
+        if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
+        winModalTimerRef.current = setTimeout(() => {
+          setShowWinModal(true);
+        }, 4500);
       },
       onChatMessage: (msg) => {
         setChatMessages((prev) => [...prev.slice(-49), msg]);
@@ -173,6 +189,10 @@ export default function Home() {
     });
 
     return () => {
+      if (winModalTimerRef.current) {
+        clearTimeout(winModalTimerRef.current);
+        winModalTimerRef.current = null;
+      }
       unsubscribe();
     };
   }, [room?.code, player?.id]);
@@ -338,6 +358,7 @@ export default function Home() {
                   currentPlayer={player}
                   onStartRound={handleStartRound}
                   onLockBetting={handleLockBetting}
+                  onShowResultModal={() => setShowWinModal(true)}
                 />
 
                 <GameBoard

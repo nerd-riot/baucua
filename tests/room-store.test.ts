@@ -58,7 +58,7 @@ describe('Vercel-Native RoomStore Logic', () => {
     assert.strictEqual(updatedRoom.players[p2.id].isHost, true);
   });
 
-  it('completes round betting, placement, and settlement with correct economy', () => {
+  it('completes round betting, placement, and settlement with correct economy', async () => {
     const store = getRoomStore();
     const host = store.registerPlayer('dev_h4', 'Host 4', 'char_boy_ao_dai_xanh');
     const room = store.createRoom(host, { name: 'Econ Room', isPrivate: false });
@@ -82,8 +82,8 @@ describe('Vercel-Native RoomStore Logic', () => {
     assert.strictEqual(betRes.newBalance, 900);
     assert.strictEqual(room.players[p2.id].points, 900);
 
-    // 3. Lock & roll
-    const rollRes = store.lockAndRoll(room.id);
+    // 3. Lock & roll (0ms wait in tests)
+    const rollRes = await store.lockAndRoll(room.id, 0);
     assert.strictEqual(rollRes.success, true);
     assert(rollRes.diceResult);
     assert.strictEqual(rollRes.diceResult.length, 3);

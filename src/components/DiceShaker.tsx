@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import { DiceResult, Player, Room, RoundState, SYMBOLS, SymbolId } from '@/types';
 import { sound } from '@/lib/sound';
-import { Play, Lock, Sparkles, Clock } from 'lucide-react';
+import { Play, Lock, Sparkles, Clock, Flame, Eye } from 'lucide-react';
 
 interface DiceShakerProps {
   room: Room;
   currentPlayer: Player;
   onStartRound: () => void;
   onLockBetting: () => void;
+  onShowResultModal?: () => void;
 }
 
 export const DiceShaker: React.FC<DiceShakerProps> = ({
@@ -18,6 +20,7 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
   currentPlayer,
   onStartRound,
   onLockBetting,
+  onShowResultModal,
 }) => {
   const currentRound = room.currentRound;
   const isHost = room.hostId === currentPlayer.id;
@@ -25,6 +28,14 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
   const diceResult: DiceResult | undefined = currentRound.diceResult;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const autoLockTriggeredRef = useRef(false);
+
+  // Reset autoLock flag on new round
+  useEffect(() => {
+    if (state === 'BETTING') {
+      autoLockTriggeredRef.current = false;
+    }
+  }, [state, currentRound.id]);
 
   // Countdown timer calculation
   useEffect(() => {
@@ -37,24 +48,87 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
       const remainingMs = Math.max(0, currentRound.bettingEndsAt! - Date.now());
       const seconds = Math.ceil(remainingMs / 1000);
       setTimeLeft(seconds);
+
       if (seconds <= 3 && seconds > 0) {
         sound.playTick();
       }
-    }, 500);
+
+      // Auto lock betting when time expires
+      if (remainingMs <= 0 && isHost && !autoLockTriggeredRef.current) {
+        autoLockTriggeredRef.current = true;
+        onLockBetting();
+      }
+    }, 400);
 
     return () => clearInterval(interval);
-  }, [state, currentRound.bettingEndsAt]);
+  }, [state, currentRound.bettingEndsAt, isHost, onLockBetting]);
 
-  // Play shake sound on rolling state
+  // Handle ROLLING state: Rattle sound loop
   useEffect(() => {
     if (state === 'ROLLING') {
       sound.playDiceShake();
       const interval = setInterval(() => {
         sound.playDiceShake();
-      }, 700);
+      }, 650);
       return () => clearInterval(interval);
     }
   }, [state]);
+
+  // Handle REVEALED state: Dramatic bowl reveal sound, staggered dice drop sounds & festive fireworks
+  useEffect(() => {
+    if (state === 'REVEALED' && diceResult) {
+      // 1. Bowl opening swoosh chime
+      sound.playBowlOpen();
+
+      // 2. Staggered dice landing clicks
+      const t1 = setTimeout(() => sound.playDiceLand(), 250);
+      const t2 = setTimeout(() => sound.playDiceLand(), 550);
+      const t3 = setTimeout(() => sound.playDiceLand(), 850);
+
+      // 3. Fireworks celebration burst when all 3 dice are on the plate
+      const tFire = setTimeout(() => {
+        sound.playFireworkBurst();
+        try {
+          // Left cannon
+          confetti({
+            particleCount: 55,
+            angle: 60,
+            spread: 60,
+            origin: { x: 0.15, y: 0.6 },
+            colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a', '#ec4899'],
+          });
+          // Right cannon
+          confetti({
+            particleCount: 55,
+            angle: 120,
+            spread: 60,
+            origin: { x: 0.85, y: 0.6 },
+            colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a', '#3b82f6'],
+          });
+        } catch {}
+      }, 900);
+
+      // 4. Secondary celebration shower
+      const tFire2 = setTimeout(() => {
+        try {
+          confetti({
+            particleCount: 40,
+            spread: 90,
+            origin: { y: 0.5 },
+            colors: ['#ffd700', '#ff4500', '#00ffcc', '#ffffff'],
+          });
+        } catch {}
+      }, 1400);
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+        clearTimeout(tFire);
+        clearTimeout(tFire2);
+      };
+    }
+  }, [state, diceResult]);
 
   const getSymbolImage = (id: SymbolId) => {
     const map: Record<SymbolId, string> = {
@@ -65,124 +139,215 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
       [SymbolId.GA]:  '/assets/ga.jpg',
       [SymbolId.NAI]: '/assets/nai.jpg',
     };
-    return map[id] || '/assets/04_animals_board/card_bau.png';
+    return map[id] || '/assets/bau.jpg';
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-4 bg-gradient-to-b from-red-950/90 via-tet-card to-black/90 rounded-2xl border-2 border-amber-500/40 shadow-royal overflow-hidden max-w-xl mx-auto w-full">
+    <div className="relative flex flex-col items-center justify-center p-4 sm:p-5 bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-3xl border-2 border-amber-500/40 shadow-royal overflow-hidden max-w-xl mx-auto w-full select-none">
       {/* Decorative festive corners */}
-      <div className="absolute top-2 left-2 text-amber-500/30 text-xs select-none">❖</div>
-      <div className="absolute top-2 right-2 text-amber-500/30 text-xs select-none">❖</div>
-      <div className="absolute bottom-2 left-2 text-amber-500/30 text-xs select-none">❖</div>
-      <div className="absolute bottom-2 right-2 text-amber-500/30 text-xs select-none">❖</div>
+      <div className="absolute top-2.5 left-2.5 text-amber-500/40 text-xs">❖</div>
+      <div className="absolute top-2.5 right-2.5 text-amber-500/40 text-xs">❖</div>
+      <div className="absolute bottom-2.5 left-2.5 text-amber-500/40 text-xs">❖</div>
+      <div className="absolute bottom-2.5 right-2.5 text-amber-500/40 text-xs">❖</div>
 
       {/* Header Status Bar */}
-      <div className="flex items-center justify-between w-full mb-3 px-2">
+      <div className="flex items-center justify-between w-full mb-2 px-1">
         <div className="flex items-center space-x-2">
-          <span className="text-xs uppercase tracking-wider font-extrabold text-amber-300/80 bg-red-900/60 px-2.5 py-1 rounded-full border border-amber-500/30">
+          <span className="text-xs uppercase tracking-wider font-extrabold text-amber-300 bg-red-900/80 px-3 py-1 rounded-full border border-amber-500/40 shadow-sm">
             Ván #{currentRound.roundNumber}
           </span>
-          <span className="text-xs font-semibold text-amber-200">
+          <span className="text-xs sm:text-sm font-bold text-amber-100 flex items-center gap-1.5">
             {state === 'WAITING' && 'Chờ bắt đầu ván mới'}
-            {state === 'BETTING' && 'Đang đặt cược'}
-            {state === 'ROLLING' && 'Đang xóc đĩa...'}
-            {state === 'REVEALED' && 'Đã mở bát!'}
+            {state === 'BETTING' && 'Đang đặt cược...'}
+            {state === 'ROLLING' && (
+              <span className="text-amber-300 flex items-center gap-1 animate-pulse">
+                <Flame size={15} className="text-red-500 animate-bounce" />
+                Đang xóc đĩa (hồi hộp!)...
+              </span>
+            )}
+            {state === 'REVEALED' && (
+              <span className="text-emerald-400 flex items-center gap-1">
+                <Sparkles size={15} className="text-amber-400 animate-spin" />
+                Đã mở bát — Chúc mừng!
+              </span>
+            )}
           </span>
         </div>
 
         {/* Countdown Badge */}
         {state === 'BETTING' && (
-          <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/50 px-3 py-1 rounded-full font-mono font-black text-sm animate-pulse">
+          <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/60 px-3 py-1 rounded-full font-mono font-black text-sm shadow-gold-glow animate-pulse">
             <Clock size={15} />
             <span>{timeLeft}s</span>
           </div>
         )}
       </div>
 
-      {/* Main Plate and Bowl Stage */}
-      <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-2">
-        {/* Porcelain Plate (Đĩa sứ) */}
-        <div className="absolute inset-0 rounded-full border-4 border-amber-500/60 bg-gradient-to-br from-amber-900/40 via-red-950 to-black shadow-2xl flex items-center justify-center p-3">
+      {/* Main Plate and Bowl Stage with 3D Perspective */}
+      <div
+        className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center my-3"
+        style={{ perspective: 1200 }}
+      >
+        {/* Shaking vibration shockwave aura around the plate */}
+        {state === 'ROLLING' && (
+          <motion.div
+            animate={{
+              scale: [0.95, 1.08, 0.95],
+              opacity: [0.3, 0.8, 0.3],
+            }}
+            transition={{ repeat: Infinity, duration: 0.5, ease: 'easeInOut' }}
+            className="absolute inset-0 rounded-full border-2 border-amber-400/80 shadow-[0_0_35px_rgba(245,158,11,0.7)] pointer-events-none"
+          />
+        )}
+
+        {/* Porcelain Plate (Đĩa sứ truyền thống) */}
+        <div className="absolute inset-0 rounded-full border-4 border-amber-500/60 bg-gradient-to-br from-amber-950/60 via-red-950 to-black shadow-2xl flex items-center justify-center p-3 overflow-hidden">
           <img
             src="/assets/dia.jpg"
             alt="Đĩa sứ"
-            className="w-full h-full object-cover rounded-full opacity-80"
+            className="w-full h-full object-cover rounded-full opacity-85 select-none pointer-events-none"
           />
-        </div>
 
-        {/* Dice Area (Displayed underneath the bowl when lifted or revealed) */}
-        <div className="absolute z-10 flex items-center justify-center gap-3">
-          {state === 'REVEALED' && diceResult ? (
-            diceResult.map((sym, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ scale: 0, rotate: -30, y: 20 }}
-                animate={{ scale: 1, rotate: 0, y: 0 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 18,
-                  delay: idx * 0.15,
-                }}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-amber-100 to-amber-300 p-1 shadow-gold-glow flex flex-col items-center justify-center border-2 border-amber-500"
-              >
-                <img
-                  src={getSymbolImage(sym)}
-                  alt={SYMBOLS[sym].nameVi}
-                  className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg shadow-inner"
-                />
-                <span className="text-[10px] font-black text-red-950 uppercase tracking-tighter">
-                  {SYMBOLS[sym].nameVi}
-                </span>
-              </motion.div>
-            ))
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 animate-pulse" />
+          {/* Golden Divine Sunburst Light Burst Underneath Revealed Bowl */}
+          {state === 'REVEALED' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.2, rotate: 0 }}
+              animate={{
+                opacity: [0, 0.85, 0.5],
+                scale: [0.2, 1.35, 1.15],
+                rotate: 180,
+              }}
+              transition={{ duration: 2.2, ease: 'easeOut' }}
+              className="absolute inset-2 pointer-events-none rounded-full bg-radial from-amber-300/40 via-amber-500/20 to-transparent blur-md"
+            />
           )}
         </div>
 
-        {/* Shaking & Lifting Ceramic Bowl (Bát úp) */}
+        {/* 3 Rolled Dice with 3D Tumble and Bounce Animation */}
+        <div className="absolute z-10 flex items-center justify-center gap-2 sm:gap-3.5">
+          {state === 'REVEALED' && diceResult ? (
+            diceResult.map((sym, idx) => {
+              const delays = [0.2, 0.5, 0.8];
+              const rotations = [-8, 4, -5];
+              return (
+                <motion.div
+                  key={`${sym}-${idx}`}
+                  initial={{
+                    scale: 0,
+                    rotateX: 720 * (idx % 2 === 0 ? 1 : -1),
+                    rotateY: 540 * (idx % 2 === 0 ? -1 : 1),
+                    rotateZ: 360,
+                    y: -90,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    scale: 1,
+                    rotateX: 0,
+                    rotateY: 0,
+                    rotateZ: rotations[idx],
+                    y: 0,
+                    opacity: 1,
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 280,
+                    damping: 14,
+                    delay: delays[idx],
+                  }}
+                  className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.7),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center justify-between border-2 border-amber-400"
+                >
+                  {/* Dice Inner Mascot Artwork */}
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden shadow-inner border border-amber-400/40 bg-black/10">
+                    <img
+                      src={getSymbolImage(sym)}
+                      alt={SYMBOLS[sym].nameVi}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {/* Animal Vietnamese Name Badge */}
+                  <div className="bg-red-900/90 text-amber-300 text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full border border-amber-400/50 uppercase tracking-tight shadow">
+                    {SYMBOLS[sym].nameVi}
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 animate-pulse" />
+          )}
+        </div>
+
+        {/* Ceramic Bowl (Bát úp) with 3D Rotate, Tilt & Open Animation */}
         <AnimatePresence>
           <motion.div
-            className="absolute z-20 w-48 h-48 sm:w-56 sm:h-56 rounded-full flex items-center justify-center cursor-pointer select-none"
+            className="absolute z-20 w-48 h-48 sm:w-56 sm:h-56 rounded-full flex items-center justify-center select-none"
+            style={{ transformStyle: 'preserve-3d' }}
             animate={
               state === 'ROLLING'
                 ? {
-                    x: [0, -8, 8, -6, 6, -3, 3, 0],
-                    y: [0, 6, -6, 4, -4, 2, -2, 0],
-                    rotate: [0, -5, 5, -4, 4, -2, 2, 0],
-                    transition: { repeat: Infinity, duration: 0.35, ease: 'easeInOut' },
+                    x: [0, -12, 12, -9, 9, -5, 5, 0],
+                    y: [0, 8, -8, 6, -6, 3, -3, 0],
+                    rotateZ: [0, -7, 7, -5, 5, -2, 2, 0],
+                    rotateX: [0, 8, -8, 5, -5, 0],
+                    rotateY: [0, -8, 8, -5, 5, 0],
+                    transition: { repeat: Infinity, duration: 0.32, ease: 'easeInOut' },
                   }
                 : state === 'REVEALED'
                 ? {
-                    y: -110,
-                    opacity: 0.85,
-                    scale: 0.9,
-                    transition: { type: 'spring', stiffness: 200, damping: 15 },
+                    x: [0, -12, 60, 75],
+                    y: [0, -28, -135, -150],
+                    rotateZ: [0, -12, 32, 38],
+                    rotateX: [0, 26, 32, 28],
+                    rotateY: [0, 12, -18, -14],
+                    scale: [1, 1.05, 1.06, 0.94],
+                    opacity: [1, 1, 0.96, 0.92],
+                    transition: {
+                      duration: 1.25,
+                      times: [0, 0.22, 0.72, 1],
+                      ease: [0.22, 1, 0.36, 1],
+                    },
                   }
                 : {
+                    x: 0,
                     y: 0,
-                    opacity: 1,
+                    rotateZ: 0,
+                    rotateX: 0,
+                    rotateY: 0,
                     scale: 1,
+                    opacity: 1,
                     transition: { duration: 0.4 },
                   }
             }
           >
-            <div className="relative w-full h-full rounded-full shadow-royal overflow-hidden border-2 border-amber-400/50">
+            <div className="relative w-full h-full rounded-full shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_20px_rgba(245,158,11,0.3)] overflow-hidden border-2 border-amber-400/60">
               <img
                 src="/assets/bat.jpg"
                 alt="Bát úp Bầu Cua"
-                className="w-full h-full object-cover rounded-full"
+                className="w-full h-full object-cover rounded-full pointer-events-none"
               />
               {/* Bowl Decorative Gilded Center */}
-              <div className="absolute inset-0 bg-radial from-amber-400/20 via-transparent to-black/40 pointer-events-none rounded-full" />
+              <div className="absolute inset-0 bg-radial from-amber-400/25 via-transparent to-black/50 pointer-events-none rounded-full" />
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
+      {/* Result Mascot Announcement Banner */}
+      {state === 'REVEALED' && diceResult && (
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, y: 8 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          className="flex items-center space-x-2 bg-gradient-to-r from-red-950 via-amber-950/80 to-red-950 border border-amber-400/60 px-4 py-1.5 rounded-full shadow-gold-glow mb-2"
+        >
+          <Sparkles size={15} className="text-amber-400 animate-spin" />
+          <span className="text-xs sm:text-sm font-black text-amber-200 tracking-wide uppercase">
+            {diceResult.map((s) => SYMBOLS[s].nameVi).join(' • ')}
+          </span>
+          <Sparkles size={15} className="text-amber-400 animate-spin" />
+        </motion.div>
+      )}
+
       {/* Host Controls & Action Buttons */}
-      <div className="mt-2 flex items-center justify-center space-x-3 w-full">
+      <div className="mt-1 flex flex-wrap items-center justify-center gap-2.5 w-full">
         {isHost ? (
           <>
             {(state === 'WAITING' || state === 'REVEALED') && (
@@ -191,10 +356,10 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                   sound.playChip();
                   onStartRound();
                 }}
-                className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold px-6 py-2.5 rounded-full shadow-lg border border-emerald-300/40 transition active:scale-95 text-sm sm:text-base"
+                className="flex items-center space-x-2 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 text-white font-black px-6 py-2.5 rounded-full shadow-lg border border-emerald-300/40 transition active:scale-95 text-xs sm:text-sm uppercase tracking-wider"
               >
-                <Play size={18} fill="white" />
-                <span>Bắt Đầu Cược (20s)</span>
+                <Play size={16} fill="white" />
+                <span>{state === 'REVEALED' ? 'Ván Tiếp Theo (20s)' : 'Bắt Đầu Ván Mới (20s)'}</span>
               </button>
             )}
 
@@ -204,27 +369,41 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                   sound.playChip();
                   onLockBetting();
                 }}
-                className="flex items-center space-x-2 bg-gradient-to-r from-red-600 via-amber-600 to-red-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold px-6 py-2.5 rounded-full shadow-lg border border-amber-300/40 transition active:scale-95 text-sm sm:text-base animate-pulse"
+                className="flex items-center space-x-2 bg-gradient-to-r from-red-600 via-amber-600 to-red-600 hover:from-red-500 hover:to-amber-500 text-white font-black px-6 py-2.5 rounded-full shadow-lg border border-amber-300/50 transition active:scale-95 text-xs sm:text-sm animate-pulse uppercase tracking-wider"
               >
-                <Lock size={18} />
+                <Lock size={16} />
                 <span>Khóa Cược & Xóc Ngay</span>
               </button>
             )}
 
             {state === 'ROLLING' && (
-              <div className="flex items-center space-x-2 text-amber-300 text-sm font-bold bg-amber-500/10 px-4 py-2 rounded-full border border-amber-500/30">
-                <Sparkles size={16} className="animate-spin text-amber-400" />
-                <span>Đang lắc xúc xắc...</span>
+              <div className="flex items-center space-x-2 text-amber-300 text-xs sm:text-sm font-extrabold bg-amber-500/15 px-5 py-2.5 rounded-full border border-amber-500/40 shadow-gold-glow animate-pulse">
+                <Flame size={16} className="text-red-400 animate-bounce" />
+                <span>Đang xóc xúc xắc, hãy chờ mở bát...</span>
               </div>
             )}
           </>
         ) : (
-          <div className="text-xs sm:text-sm font-semibold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-4 py-2 rounded-full">
+          <div className="text-xs sm:text-sm font-bold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-4 py-2 rounded-full">
             {state === 'WAITING' && 'Đang đợi chủ phòng bắt đầu vòng mới...'}
             {state === 'BETTING' && 'Hãy chọn linh vật và đặt cược ngay!'}
-            {state === 'ROLLING' && 'Bát đang xóc, chúc bạn may mắn!'}
+            {state === 'ROLLING' && 'Bát đang xóc kịch tính, chuẩn bị mở bát!'}
             {state === 'REVEALED' && 'Vòng cược đã kết thúc, chuẩn bị ván mới.'}
           </div>
+        )}
+
+        {/* View Results Modal Early Button */}
+        {state === 'REVEALED' && onShowResultModal && (
+          <button
+            onClick={() => {
+              sound.playChip();
+              onShowResultModal();
+            }}
+            className="flex items-center space-x-1.5 bg-black/50 hover:bg-black/70 text-amber-300 hover:text-amber-200 text-xs font-bold px-3.5 py-2 rounded-full border border-amber-500/40 transition active:scale-95"
+          >
+            <Eye size={14} />
+            <span>Xem Bảng Kết Quả</span>
+          </button>
         )}
       </div>
     </div>
