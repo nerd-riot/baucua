@@ -15,6 +15,34 @@ interface DiceShakerProps {
   onShowResultModal?: () => void;
 }
 
+const TROLL_SUSPENSE_QUOTES = [
+  "Bát này thề không bịp! Bịp thì... làm ván nữa! 🎲",
+  "Tay run bần bật... Ai rồi cũng phải ra đê hoặc lên mây! 🚀",
+  "Xóc bay nóc nhà! Ai cược Cua chuẩn bị tinh thần kẹp tay! 🦀",
+  "Đang lắc 720 vòng... Xem ai gáy to nhất sới hôm nay! 🔥",
+  "Hít sâu thở đều! Cầu trời khấn Phật xin con Bầu con Cá! 🙏",
+  "Nín thở 3 giây... Quẻ này lành ít dữ nhiều rồi các con bạc! 💀",
+  "Nghe tiếng lách cách là biết sắp có người khóc thét! 💸",
+  "Bình tĩnh không quạu! Nhà cái đang xóc bằng cả tính mạng! 💥",
+  "Mở ra không trúng thì đổ tại phong thủy, đừng đổ tại tôi! 🌪️",
+  "Xóc nhiệt tình, lắc hết mình! Ra ba con Tôm là cười ỉa! 🦐",
+  "Đang niệm chú 'Tất tay không hối hận'... Bát này căng đét! ⚡",
+  "Chuẩn bị khăn giấy lau nước mắt hoặc bao tải đựng tiền! 💰",
+  "Lắc long trời lở đất! Thần rùa hiển linh độ tôi ván này! 🐢",
+  "Ủa ai cược Gà dữ vậy? Coi chừng thành Gà luộc cúng Tết nha! 🐔",
+  "Tiền trong túi là tiền giấy, vào tay nhà cái mới là tiền tươi! 💵",
+  "Nhắm mắt cầu nguyện đi! Mở bát là biết ai làm đại gia! 👑",
+  "Phen này trúng Bầu thì đổi đời, trượt thì đổi chỗ ngủ! 🏕️",
+  "Lắc đều tay không thiên vị! Tổ nghề Bầu Cua đang độ ai đây? 🎯",
+];
+
+const TROLL_BETTING_QUOTES = [
+  "Cược nhanh tay, ván này thơm phức! 🍜",
+  "Đừng suy nghĩ nhiều, linh cảm mách bảo con gì thì quất! 💡",
+  "Liều ăn nhiều, không liều thì ăn bánh chưng chay! 🥟",
+  "Vận may đang vẫy gọi, ai dám tất tay làm vua ván này? 👑",
+];
+
 export const DiceShaker: React.FC<DiceShakerProps> = ({
   room,
   currentPlayer,
@@ -29,6 +57,27 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const autoLockTriggeredRef = useRef(false);
+  const [trollQuote, setTrollQuote] = useState<string>(() => {
+    return TROLL_SUSPENSE_QUOTES[Math.floor(Math.random() * TROLL_SUSPENSE_QUOTES.length)];
+  });
+
+  // Cycle troll suspense quotes rapidly every 1.2s during ROLLING state
+  useEffect(() => {
+    if (state === 'ROLLING') {
+      setTrollQuote(TROLL_SUSPENSE_QUOTES[Math.floor(Math.random() * TROLL_SUSPENSE_QUOTES.length)]);
+      const interval = setInterval(() => {
+        setTrollQuote((prev) => {
+          let next = prev;
+          while (next === prev) {
+            next = TROLL_SUSPENSE_QUOTES[Math.floor(Math.random() * TROLL_SUSPENSE_QUOTES.length)];
+          }
+          return next;
+        });
+      }, 1200);
+
+      return () => clearInterval(interval);
+    }
+  }, [state]);
 
   // Reset autoLock flag on new round
   useEffect(() => {
@@ -156,19 +205,19 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
           <span className="text-xs uppercase tracking-wider font-extrabold text-amber-300 bg-red-900/80 px-3 py-1 rounded-full border border-amber-500/40 shadow-sm">
             Ván #{currentRound.roundNumber}
           </span>
-          <span className="text-xs sm:text-sm font-bold text-amber-100 flex items-center gap-1.5">
-            {state === 'WAITING' && 'Chờ bắt đầu ván mới'}
-            {state === 'BETTING' && 'Đang đặt cược...'}
+          <span className="text-xs sm:text-sm font-bold text-amber-100 flex items-center gap-1.5 overflow-hidden">
+            {state === 'WAITING' && '🏮 Chờ bắt đầu ván mới...'}
+            {state === 'BETTING' && '🔥 Đang đặt cược, húp lẹ!'}
             {state === 'ROLLING' && (
-              <span className="text-amber-300 flex items-center gap-1 animate-pulse">
-                <Flame size={15} className="text-red-500 animate-bounce" />
-                Đang xóc đĩa (hồi hộp!)...
+              <span className="text-amber-300 flex items-center gap-1.5 animate-pulse truncate max-w-[280px] sm:max-w-md font-black">
+                <Flame size={15} className="text-red-500 animate-bounce shrink-0" />
+                <span className="truncate">{trollQuote}</span>
               </span>
             )}
             {state === 'REVEALED' && (
-              <span className="text-emerald-400 flex items-center gap-1">
+              <span className="text-emerald-400 flex items-center gap-1 font-black">
                 <Sparkles size={15} className="text-amber-400 animate-spin" />
-                Đã mở bát — Chúc mừng!
+                Đã mở bát — Ai khóc ai cười?
               </span>
             )}
           </span>
@@ -377,18 +426,29 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
             )}
 
             {state === 'ROLLING' && (
-              <div className="flex items-center space-x-2 text-amber-300 text-xs sm:text-sm font-extrabold bg-amber-500/15 px-5 py-2.5 rounded-full border border-amber-500/40 shadow-gold-glow animate-pulse">
-                <Flame size={16} className="text-red-400 animate-bounce" />
-                <span>Đang xóc xúc xắc, hãy chờ mở bát...</span>
-              </div>
+              <motion.div
+                key={trollQuote}
+                initial={{ scale: 0.95, opacity: 0, y: 3 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center space-x-2 text-amber-200 text-xs sm:text-sm font-black bg-gradient-to-r from-red-950 via-amber-950 to-red-950 px-5 py-2.5 rounded-full border border-amber-400/60 shadow-gold-glow text-center max-w-md"
+              >
+                <Flame size={16} className="text-red-400 animate-bounce shrink-0" />
+                <span className="italic">"{trollQuote}"</span>
+              </motion.div>
             )}
           </>
         ) : (
-          <div className="text-xs sm:text-sm font-bold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-4 py-2 rounded-full">
-            {state === 'WAITING' && 'Đang đợi chủ phòng bắt đầu vòng mới...'}
-            {state === 'BETTING' && 'Hãy chọn linh vật và đặt cược ngay!'}
-            {state === 'ROLLING' && 'Bát đang xóc kịch tính, chuẩn bị mở bát!'}
-            {state === 'REVEALED' && 'Vòng cược đã kết thúc, chuẩn bị ván mới.'}
+          <div className="text-xs sm:text-sm font-bold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-4 py-2 rounded-full text-center max-w-md">
+            {state === 'WAITING' && '🏮 Đang đợi chủ phòng mở ván mới...'}
+            {state === 'BETTING' && '🔥 Hãy chọn linh vật và tất tay ngay!'}
+            {state === 'ROLLING' && (
+              <span className="flex items-center justify-center gap-1.5 text-amber-300 font-black animate-pulse">
+                <Flame size={15} className="text-red-400 animate-bounce shrink-0" />
+                <span>"{trollQuote}"</span>
+              </span>
+            )}
+            {state === 'REVEALED' && '✨ Vòng cược đã kết thúc, chuẩn bị ván mới!'}
           </div>
         )}
 

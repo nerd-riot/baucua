@@ -17,14 +17,19 @@ export const PlayerList: React.FC<PlayerListProps> = ({ room, currentPlayer }) =
   };
 
   return (
-    <div className="bg-gradient-to-b from-red-950/90 to-black/90 rounded-2xl border border-amber-500/30 p-3 shadow-royal w-full">
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-amber-500/20">
-        <span className="text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1.5">
-          <Users size={16} className="text-amber-400" /> Danh Sách Người Chơi ({players.length}/{room.maxPlayers})
+    <div className="bg-gradient-to-b from-red-950/95 via-tet-card to-black/95 rounded-2xl border border-amber-500/40 p-3 shadow-royal w-full select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-amber-500/20">
+        <span className="text-xs sm:text-sm font-extrabold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+          <Users size={16} className="text-amber-400" /> Người Chơi ({players.length}/{room.maxPlayers})
+        </span>
+        <span className="text-[10px] text-amber-400/70 font-semibold bg-black/40 px-2 py-0.5 rounded-full border border-amber-500/20">
+          Đang online
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-48 overflow-y-auto pr-1">
+      {/* Players List: Clean, responsive vertical stack with smooth scroll */}
+      <div className="flex flex-col space-y-2 max-h-56 sm:max-h-72 overflow-y-auto pr-1 custom-scrollbar">
         {players.map((p) => {
           const isMe = p.id === currentPlayer.id;
           const isHost = room.hostId === p.id;
@@ -32,35 +37,54 @@ export const PlayerList: React.FC<PlayerListProps> = ({ room, currentPlayer }) =
           return (
             <div
               key={p.id}
-              className={`flex items-center space-x-2 p-1.5 rounded-xl border transition ${
+              className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
                 isMe
-                  ? 'bg-amber-500/10 border-amber-400/80 shadow-inner'
-                  : 'bg-black/40 border-amber-900/40'
+                  ? 'bg-gradient-to-r from-amber-500/20 via-red-900/40 to-amber-500/10 border-amber-400 shadow-gold-glow'
+                  : 'bg-black/50 hover:bg-black/70 border-amber-900/40'
               }`}
             >
-              {/* Avatar */}
-              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-red-900/50 border border-amber-400/40 shrink-0">
-                <img
-                  src={getAvatarPath(p.avatarId)}
-                  alt={p.nickname}
-                  className="w-full h-full object-cover"
-                />
-                {isHost && (
-                  <div className="absolute -top-1 -right-1 bg-amber-500 text-red-950 rounded-full p-0.5 shadow">
-                    <Crown size={10} fill="currentColor" />
-                  </div>
-                )}
+              {/* Left: Avatar + Crown + Nickname */}
+              <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+                <div className="relative w-9 h-9 rounded-full overflow-hidden bg-red-900/60 border-2 border-amber-400/60 shrink-0 shadow">
+                  <img
+                    src={getAvatarPath(p.avatarId)}
+                    alt={p.nickname}
+                    className="w-full h-full object-cover"
+                  />
+                  {isHost && (
+                    <div
+                      className="absolute -top-1 -right-1 bg-amber-400 text-red-950 rounded-full p-0.5 shadow-md"
+                      title="Chủ phòng"
+                    >
+                      <Crown size={11} fill="currentColor" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-black text-amber-100 truncate flex items-center gap-1.5">
+                    {p.nickname}
+                    {isMe && (
+                      <span className="bg-amber-400/20 text-amber-300 text-[9px] px-1.5 py-0.2 rounded-full border border-amber-400/40 shrink-0">
+                        Bạn
+                      </span>
+                    )}
+                  </span>
+                  {isHost && (
+                    <span className="text-[10px] text-amber-400/80 font-bold flex items-center gap-0.5">
+                      👑 Chủ phòng
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Name & Points */}
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[11px] font-bold text-amber-200 truncate flex items-center gap-1">
-                  {p.nickname}
-                  {isMe && <span className="text-[9px] text-amber-400">(Tôi)</span>}
+              {/* Right: Points Badge */}
+              <div className="flex items-center space-x-1 bg-black/70 px-2.5 py-1 rounded-full border border-amber-500/30 shrink-0">
+                <span className="text-xs">💰</span>
+                <span className="text-xs font-mono font-black text-amber-300">
+                  {p.points.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-amber-400/80 font-mono">
-                  {p.points.toLocaleString()} pts
-                </span>
+                <span className="text-[10px] text-amber-400/70 font-bold">pts</span>
               </div>
             </div>
           );
