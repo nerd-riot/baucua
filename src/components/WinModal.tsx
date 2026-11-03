@@ -10,12 +10,17 @@ import { Trophy, Award, X } from 'lucide-react';
 interface WinModalProps {
   round: Round;
   currentUserId: string;
+  isManualReview?: boolean;
   onClose: () => void;
 }
+
+// Module-level set to prevent replaying sounds across modal open/close cycles for the same round
+const playedSoundRounds = new Set<string>();
 
 export const WinModal: React.FC<WinModalProps> = ({
   round,
   currentUserId,
+  isManualReview = false,
   onClose,
 }) => {
   const settlements = round.settlements || [];
@@ -23,25 +28,41 @@ export const WinModal: React.FC<WinModalProps> = ({
     (s) => s.playerId === currentUserId
   );
 
-  const hasWon = mySettlement && mySettlement.netProfit > 0;
+  // Priority rule: If user hit ANY winning symbol (or grossPayout > 0), prioritize victory!
+  const hasWonAny = Boolean(
+    mySettlement && (mySettlement.grossPayout > 0 || (mySettlement.winningSymbols && mySettlement.winningSymbols.length > 0))
+  );
+
+  // Only consider loss if user bet and hit NOTHING
+  const hasLostAll = Boolean(
+    mySettlement && mySettlement.totalBet > 0 && mySettlement.grossPayout === 0
+  );
 
   useEffect(() => {
-    if (hasWon) {
+    // Requirement 3: Viewing results manually (xem lại kết quả) must NOT play sound effects
+    if (isManualReview) return;
+
+    // Do not replay sound if already played for this round
+    if (playedSoundRounds.has(round.id)) return;
+
+    if (hasWonAny) {
+      playedSoundRounds.add(round.id);
       sound.playWin();
-      // Subtle festive sparkle
       try {
         confetti({
-          particleCount: 22,
-          spread: 50,
+          particleCount: 16,
+          spread: 45,
           origin: { y: 0.65 },
-          scalar: 0.85,
+          scalar: 0.8,
+          ticks: 140,
           colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a'],
         });
       } catch {}
-    } else if (mySettlement && mySettlement.totalBet > 0 && mySettlement.netProfit <= 0) {
+    } else if (hasLostAll) {
+      playedSoundRounds.add(round.id);
       sound.playLose();
     }
-  }, [hasWon, mySettlement]);
+  }, [hasWonAny, hasLostAll, isManualReview, round.id]);
 
   const getSymbolImage = (id: SymbolId) => {
     const map: Record<SymbolId, string> = {
@@ -78,7 +99,7 @@ export const WinModal: React.FC<WinModalProps> = ({
           </button>
           {/* Header Graphic / Icon */}
           <div className="flex justify-center mb-3">
-            {hasWon ? (
+            {hasWonAny ? (
               <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 p-3 shadow-gold-glow flex items-center justify-center animate-bounce">
                 <Trophy size={36} className="text-red-950" />
               </div>
@@ -91,7 +112,7 @@ export const WinModal: React.FC<WinModalProps> = ({
 
           {/* Title */}
           <h2 className="text-xl sm:text-2xl font-black text-gold-gradient uppercase tracking-wide">
-            {hasWon ? 'Chúc Mừng Chiến Thắng!' : 'Kết Quả Ván Đấu'}
+            {hasWonAny ? 'Chúc Mừng Chiến Thắng!' : 'Kết Quả Ván Đấu'}
           </h2>
 
           {/* Rolled Dice Showcase - Large & Beautiful 3D Mascots */}

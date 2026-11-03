@@ -28,6 +28,7 @@ export default function Home() {
   const [boardSummary, setBoardSummary] = useState<BoardBetSummary[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWinModal, setShowWinModal] = useState<boolean>(false);
+  const [isManualReview, setIsManualReview] = useState<boolean>(false);
   const winModalTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [activeTab, setActiveTab] = useState<'game' | 'players' | 'chat'>('game');
 
@@ -183,6 +184,7 @@ export default function Home() {
         // Suspense timing: wait 5s after bowl reveal before opening WinModal
         if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
         winModalTimerRef.current = setTimeout(() => {
+          setIsManualReview(false);
           setShowWinModal(true);
         }, 5000);
       },
@@ -363,7 +365,10 @@ export default function Home() {
                   currentPlayer={player}
                   onStartRound={handleStartRound}
                   onLockBetting={handleLockBetting}
-                  onShowResultModal={() => setShowWinModal(true)}
+                  onShowResultModal={() => {
+                    setIsManualReview(true);
+                    setShowWinModal(true);
+                  }}
                 />
 
                 <GameBoard
@@ -398,6 +403,7 @@ export default function Home() {
               <WinModal
                 round={room.currentRound}
                 currentUserId={player.id}
+                isManualReview={isManualReview}
                 onClose={() => setShowWinModal(false)}
               />
             )}

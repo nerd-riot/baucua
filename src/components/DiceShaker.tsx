@@ -137,19 +137,19 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
       const t2 = setTimeout(() => sound.playDiceLand(), 500);
       const t3 = setTimeout(() => sound.playDiceLand(), 780);
 
-      // Subtle celebration sparkle (refined, doesn't obscure screen)
+      // Subtle celebration sparkle (refined, ~3s duration right after opening bowl, no audio noise)
       const tFire = setTimeout(() => {
-        sound.playFireworkBurst();
         try {
           confetti({
-            particleCount: 26,
-            spread: 48,
-            origin: { y: 0.6 },
-            scalar: 0.85,
+            particleCount: 20,
+            spread: 45,
+            origin: { y: 0.58 },
+            scalar: 0.8,
+            ticks: 150,
             colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a'],
           });
         } catch {}
-      }, 880);
+      }, 750);
 
       return () => {
         clearTimeout(t1);

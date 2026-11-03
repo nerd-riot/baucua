@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ALL_SYMBOLS, BoardBetSummary, Player, Room, SYMBOLS, SymbolId } from '@/types';
 import { sound } from '@/lib/sound';
-import { Sparkles, Zap } from 'lucide-react';
+import { Sparkles, Zap, Users, X } from 'lucide-react';
 
 interface GameBoardProps {
   room: Room;
@@ -34,6 +34,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onPlaceBet,
 }) => {
   const [selectedChip, setSelectedChip] = useState<number>(50);
+  const [selectedBettorsSymbol, setSelectedBettorsSymbol] = useState<SymbolId | null>(null);
   const isBetting = room.currentRound.state === 'BETTING';
   const diceResult = room.currentRound.diceResult;
 
@@ -81,6 +82,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         totalAmount: 0,
         playerCount: 0,
         myAmount: 0,
+        bettors: [],
       }
     );
   };
@@ -224,13 +226,101 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 />
               </div>
 
-              {/* Bet Amount Details Footer */}
-              <div className="w-full flex items-center justify-between mt-0.5 text-[10px] sm:text-[11px] text-amber-200/80 bg-black/60 px-2 py-0.5 rounded-lg border border-amber-900/50 shrink-0">
-                <span>Tổng cược:</span>
-                <span className="font-black text-amber-300 font-mono">
-                  {summary.totalAmount > 0 ? summary.totalAmount.toLocaleString() : '0'} pts
-                </span>
+              {/* Bet Amount Details Footer & Bettor Breakdown Trigger */}
+              <div className="w-full flex items-center justify-between mt-0.5 text-[10px] sm:text-[11px] text-amber-200/80 bg-black/60 px-1.5 py-0.5 rounded-lg border border-amber-900/50 shrink-0 relative">
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="text-[10px] text-amber-300/70">Tổng:</span>
+                  <span className="font-black text-amber-300 font-mono text-[10px] sm:text-[11px]">
+                    {summary.totalAmount > 0 ? summary.totalAmount.toLocaleString() : '0'}
+                  </span>
+                </div>
+
+                {/* Bettors Count & Click to View Breakdown */}
+                {summary.playerCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sound.playChip();
+                      setSelectedBettorsSymbol(selectedBettorsSymbol === symbol ? null : symbol);
+                    }}
+                    className="flex items-center space-x-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/40 font-bold transition active:scale-95 text-[9px] sm:text-[10px] shrink-0"
+                    title="Xem chi tiết người cược"
+                  >
+                    <div className="flex -space-x-1 overflow-hidden shrink-0">
+                      {summary.bettors?.slice(0, 2).map((b) => (
+                        <img
+                          key={b.playerId}
+                          src={`/assets/02_characters/${b.avatarId}.png`}
+                          alt={b.nickname}
+                          className="w-3.5 h-3.5 rounded-full object-cover border border-amber-300 inline-block"
+                        />
+                      ))}
+                    </div>
+                    <span>{summary.playerCount} người</span>
+                  </button>
+                )}
               </div>
+
+              {/* Bettors Breakdown Popover */}
+              <AnimatePresence>
+                {selectedBettorsSymbol === symbol && summary.bettors && summary.bettors.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute inset-x-1 bottom-1 z-40 bg-gradient-to-b from-red-950/98 via-tet-card to-black/98 backdrop-blur-md rounded-xl border-2 border-amber-400 p-2 shadow-2xl max-h-44 flex flex-col"
+                  >
+                    <div className="flex items-center justify-between pb-1 mb-1 border-b border-amber-500/30">
+                      <span className="text-[10px] font-black text-amber-300 uppercase flex items-center gap-1">
+                        <Users size={12} className="text-amber-400" />
+                        Cược {meta.nameVi} ({summary.playerCount} người)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBettorsSymbol(null);
+                        }}
+                        className="text-amber-400/80 hover:text-amber-200 p-0.5 rounded hover:bg-white/10"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col space-y-1 overflow-y-auto custom-scrollbar pr-0.5">
+                      {summary.bettors.map((b) => {
+                        const isThisMe = b.playerId === currentPlayer.id;
+                        return (
+                          <div
+                            key={b.playerId}
+                            className={`flex items-center justify-between px-1.5 py-1 rounded text-[10px] ${
+                              isThisMe
+                                ? 'bg-amber-500/25 border border-amber-400/60 font-bold'
+                                : 'bg-black/50 border border-amber-900/40'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <img
+                                src={`/assets/02_characters/${b.avatarId}.png`}
+                                alt={b.nickname}
+                                className="w-4 h-4 rounded-full object-cover border border-amber-300/70 shrink-0"
+                              />
+                              <span className="text-amber-100 truncate max-w-[85px] sm:max-w-[110px]">
+                                {b.nickname} {isThisMe && '(Bạn)'}
+                              </span>
+                            </div>
+                            <span className="font-mono font-black text-amber-300 shrink-0">
+                              {b.amount.toLocaleString()} pts
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           );
         })}

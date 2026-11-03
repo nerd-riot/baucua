@@ -136,7 +136,7 @@ export function settleRound(
   );
 
   // Compute final board summary
-  const boardSummary = summarizeBoardBets(settledBets);
+  const boardSummary = summarizeBoardBets(settledBets, undefined, players);
 
   return {
     settledBets,
@@ -147,39 +147,85 @@ export function settleRound(
 }
 
 /**
- * Summarizes total bets per symbol on the board.
+ * Summarizes total bets per symbol on the board, including individual bettor breakdown.
  */
 export function summarizeBoardBets(
   bets: Bet[],
-  currentUserId?: string
+  currentUserId?: string,
+  players?: Record<string, Player> | Player[]
 ): BoardBetSummary[] {
+  const playerMap = new Map<string, Player>();
+  if (players) {
+    if (Array.isArray(players)) {
+      for (const p of players) {
+        if (p?.id) playerMap.set(p.id, p);
+      }
+    } else {
+      for (const p of Object.values(players)) {
+        if (p?.id) playerMap.set(p.id, p);
+      }
+    }
+  }
+
   const summaryMap: Record<
     SymbolId,
-    { totalAmount: number; players: Set<string>; myAmount: number }
+    {
+      totalAmount: number;
+      bettorsMap: Map<
+        string,
+        {
+          playerId: string;
+          nickname: string;
+          avatarId: string;
+          amount: number;
+          isMe?: boolean;
+        }
+      >;
+      myAmount: number;
+    }
   > = {
-    [SymbolId.BAU]: { totalAmount: 0, players: new Set(), myAmount: 0 },
-    [SymbolId.CUA]: { totalAmount: 0, players: new Set(), myAmount: 0 },
-    [SymbolId.TOM]: { totalAmount: 0, players: new Set(), myAmount: 0 },
-    [SymbolId.CA]:  { totalAmount: 0, players: new Set(), myAmount: 0 },
-    [SymbolId.GA]:  { totalAmount: 0, players: new Set(), myAmount: 0 },
-    [SymbolId.NAI]: { totalAmount: 0, players: new Set(), myAmount: 0 },
+    [SymbolId.BAU]: { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
+    [SymbolId.CUA]: { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
+    [SymbolId.TOM]: { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
+    [SymbolId.CA]:  { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
+    [SymbolId.GA]:  { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
+    [SymbolId.NAI]: { totalAmount: 0, bettorsMap: new Map(), myAmount: 0 },
   };
 
   for (const bet of bets) {
     const s = summaryMap[bet.symbol];
     if (s) {
       s.totalAmount += bet.amount;
-      s.players.add(bet.playerId);
-      if (currentUserId && bet.playerId === currentUserId) {
+      const isMe = Boolean(currentUserId && bet.playerId === currentUserId);
+      if (isMe) {
         s.myAmount += bet.amount;
+      }
+
+      const existing = s.bettorsMap.get(bet.playerId);
+      if (existing) {
+        existing.amount += bet.amount;
+      } else {
+        const player = playerMap.get(bet.playerId);
+        s.bettorsMap.set(bet.playerId, {
+          playerId: bet.playerId,
+          nickname: player ? player.nickname : (isMe ? 'Bạn' : 'Người chơi'),
+          avatarId: player ? player.avatarId : 'char_boy_ao_dai_xanh',
+          amount: bet.amount,
+          isMe,
+        });
       }
     }
   }
 
-  return ALL_SYMBOLS.map((symbol) => ({
-    symbol,
-    totalAmount: summaryMap[symbol].totalAmount,
-    playerCount: summaryMap[symbol].players.size,
-    myAmount: summaryMap[symbol].myAmount,
-  }));
+  return ALL_SYMBOLS.map((symbol) => {
+    const s = summaryMap[symbol];
+    const bettors = Array.from(s.bettorsMap.values()).sort((a, b) => b.amount - a.amount);
+    return {
+      symbol,
+      totalAmount: s.totalAmount,
+      playerCount: bettors.length,
+      myAmount: s.myAmount,
+      bettors,
+    };
+  });
 }

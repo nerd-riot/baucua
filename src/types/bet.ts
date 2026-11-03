@@ -20,9 +20,18 @@ export interface PlaceBetRequest {
   amount: number;
 }
 
+export interface BettorDetail {
+  playerId: string;
+  nickname: string;
+  avatarId: string;
+  amount: number;
+  isMe?: boolean;
+}
+
 export interface BoardBetSummary {
   symbol: SymbolId;
   totalAmount: number;
   playerCount: number;
   myAmount: number;
+  bettors: BettorDetail[];
 }

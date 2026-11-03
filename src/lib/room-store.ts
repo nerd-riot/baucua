@@ -386,7 +386,7 @@ class VercelRoomStore {
     const room = this.rooms.get(roomId);
     if (!room) return [];
     const bets = this.roomBets.get(room.currentRound.id) || [];
-    return summarizeBoardBets(bets, currentUserId);
+    return summarizeBoardBets(bets, currentUserId, room.players);
   }
 
   public addChatMessage(roomId: string, message: ChatMessage) {

@@ -97,4 +97,77 @@ describe('Settlement Engine — Payout & Profit Rules', () => {
     // new balance = 800 (remaining) + 300 (gross payout) = 1100
     assert.strictEqual(p1Settlement.newBalance, 1100);
   });
+
+  it('correctly provides bettor breakdown when multiple players bet on the same symbol', () => {
+    const { summarizeBoardBets } = require('../src/engine/settlement');
+    const players: Record<string, Player> = {
+      p1: {
+        id: 'p1',
+        nickname: 'Khoa',
+        avatarId: 'char_boy_ao_dai_xanh',
+        points: 500,
+        deviceId: 'd1',
+        isReady: true,
+        isHost: true,
+        connected: true,
+        joinedAt: 0,
+        lastActiveAt: 0,
+      },
+      p2: {
+        id: 'p2',
+        nickname: 'Bé Trai',
+        avatarId: 'char_boy_ao_dai_vang',
+        points: 500,
+        deviceId: 'd2',
+        isReady: true,
+        isHost: false,
+        connected: true,
+        joinedAt: 0,
+        lastActiveAt: 0,
+      },
+    };
+
+    const bets: Bet[] = [
+      {
+        id: 'b1',
+        clientBetId: 'c1',
+        roomId: 'r1',
+        roundId: 'rnd1',
+        playerId: 'p1',
+        symbol: SymbolId.CUA,
+        amount: 50,
+        payoutAmount: 0,
+        netProfit: 0,
+        createdAt: 0,
+      },
+      {
+        id: 'b2',
+        clientBetId: 'c2',
+        roomId: 'r1',
+        roundId: 'rnd1',
+        playerId: 'p2',
+        symbol: SymbolId.CUA,
+        amount: 100,
+        payoutAmount: 0,
+        netProfit: 0,
+        createdAt: 0,
+      },
+    ];
+
+    const summaries = summarizeBoardBets(bets, 'p1', players);
+    const cuaSummary = summaries.find((s: any) => s.symbol === SymbolId.CUA);
+
+    assert(cuaSummary);
+    assert.strictEqual(cuaSummary.totalAmount, 150);
+    assert.strictEqual(cuaSummary.playerCount, 2);
+    assert.strictEqual(cuaSummary.myAmount, 50);
+    assert.strictEqual(cuaSummary.bettors.length, 2);
+
+    // Sorted descending by amount: p2 (100) first, p1 (50) second
+    assert.strictEqual(cuaSummary.bettors[0].nickname, 'Bé Trai');
+    assert.strictEqual(cuaSummary.bettors[0].amount, 100);
+    assert.strictEqual(cuaSummary.bettors[1].nickname, 'Khoa');
+    assert.strictEqual(cuaSummary.bettors[1].amount, 50);
+    assert.strictEqual(cuaSummary.bettors[1].isMe, true);
+  });
 });

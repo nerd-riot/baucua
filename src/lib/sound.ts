@@ -290,26 +290,10 @@ class SoundEffects {
 
   /**
    * Festive Firework Pop & Crackle
+   * Silenced as requested by user to eliminate harsh audio noise
    */
   public playFireworkBurst() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(450, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.08);
-
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.12);
+    // Intentionally silent: fireworks audio is noisy and distracting
   }
 
   /**
