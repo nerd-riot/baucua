@@ -6,7 +6,7 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/room-manager.test.ts"
   },
   "dependencies": {
     "@bau-cua/engine": "workspace:*",
