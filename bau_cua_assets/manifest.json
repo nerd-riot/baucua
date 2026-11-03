@@ -1,0 +1,1229 @@
+{
+  "total_assets": 68,
+  "assets": [
+    {
+      "module": "01_branding",
+      "filename": "logo_bau_cua_online.png",
+      "path": "01_branding/logo_bau_cua_online.png",
+      "cropped_path": "cropped/01_branding/logo_bau_cua_online.png",
+      "source_bbox": [
+        4,
+        8,
+        324,
+        200
+      ],
+      "size": {
+        "width": 320,
+        "height": 192
+      },
+      "mode": "transparent",
+      "description": "Logo chính Bầu Cua Online"
+    },
+    {
+      "module": "02_characters",
+      "filename": "char_boy_ao_dai_xanh.png",
+      "path": "02_characters/char_boy_ao_dai_xanh.png",
+      "cropped_path": "cropped/02_characters/char_boy_ao_dai_xanh.png",
+      "source_bbox": [
+        312,
+        8,
+        430,
+        202
+      ],
+      "size": {
+        "width": 118,
+        "height": 192
+      },
+      "mode": "transparent",
+      "description": "Nhân vật bé trai áo dài xanh khăn đóng"
+    },
+    {
+      "module": "02_characters",
+      "filename": "char_girl_ao_dai_do.png",
+      "path": "02_characters/char_girl_ao_dai_do.png",
+      "cropped_path": "cropped/02_characters/char_girl_ao_dai_do.png",
+      "source_bbox": [
+        420,
+        10,
+        550,
+        202
+      ],
+      "size": {
+        "width": 130,
+        "height": 190
+      },
+      "mode": "transparent",
+      "description": "Nhân vật bé gái áo dài đỏ đội nón lá cầm lì xì"
+    },
+    {
+      "module": "02_characters",
+      "filename": "char_boy_ao_ba_ba_nau.png",
+      "path": "02_characters/char_boy_ao_ba_ba_nau.png",
+      "cropped_path": "cropped/02_characters/char_boy_ao_ba_ba_nau.png",
+      "source_bbox": [
+        544,
+        8,
+        666,
+        202
+      ],
+      "size": {
+        "width": 118,
+        "height": 193
+      },
+      "mode": "transparent",
+      "description": "Nhân vật bé trai áo bà ba nâu cầm lì xì"
+    },
+    {
+      "module": "02_characters",
+      "filename": "char_girl_ao_dai_vang.png",
+      "path": "02_characters/char_girl_ao_dai_vang.png",
+      "cropped_path": "cropped/02_characters/char_girl_ao_dai_vang.png",
+      "source_bbox": [
+        666,
+        18,
+        793,
+        204
+      ],
+      "size": {
+        "width": 120,
+        "height": 185
+      },
+      "mode": "transparent",
+      "description": "Nhân vật bé gái áo dài vàng cầm lì xì"
+    },
+    {
+      "module": "03_nav_icons",
+      "filename": "btn_nav_bxh.png",
+      "path": "03_nav_icons/btn_nav_bxh.png",
+      "cropped_path": "cropped/03_nav_icons/btn_nav_bxh.png",
+      "source_bbox": [
+        795,
+        15,
+        851,
+        75
+      ],
+      "size": {
+        "width": 56,
+        "height": 59
+      },
+      "mode": "transparent",
+      "description": "Nút Bảng Xếp Hạng (BXH)"
+    },
+    {
+      "module": "03_nav_icons",
+      "filename": "btn_nav_thuong.png",
+      "path": "03_nav_icons/btn_nav_thuong.png",
+      "cropped_path": "cropped/03_nav_icons/btn_nav_thuong.png",
+      "source_bbox": [
+        854,
+        15,
+        907,
+        75
+      ],
+      "size": {
+        "width": 53,
+        "height": 60
+      },
+      "mode": "transparent",
+      "description": "Nút Thưởng (Hộp quà)"
+    },
+    {
+      "module": "03_nav_icons",
+      "filename": "btn_nav_cai_dat.png",
+      "path": "03_nav_icons/btn_nav_cai_dat.png",
+      "cropped_path": "cropped/03_nav_icons/btn_nav_cai_dat.png",
+      "source_bbox": [
+        910,
+        15,
+        962,
+        75
+      ],
+      "size": {
+        "width": 52,
+        "height": 60
+      },
+      "mode": "transparent",
+      "description": "Nút Cài đặt (Bánh răng)"
+    },
+    {
+      "module": "03_nav_icons",
+      "filename": "btn_nav_dang_xuat.png",
+      "path": "03_nav_icons/btn_nav_dang_xuat.png",
+      "cropped_path": "cropped/03_nav_icons/btn_nav_dang_xuat.png",
+      "source_bbox": [
+        964,
+        15,
+        1018,
+        75
+      ],
+      "size": {
+        "width": 54,
+        "height": 60
+      },
+      "mode": "transparent",
+      "description": "Nút Đăng xuất"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "board_bieu_tuong_dong_vat_full.png",
+      "path": "04_animals_board/board_bieu_tuong_dong_vat_full.png",
+      "cropped_path": "cropped/04_animals_board/board_bieu_tuong_dong_vat_full.png",
+      "source_bbox": [
+        795,
+        80,
+        1018,
+        270
+      ],
+      "size": {
+        "width": 223,
+        "height": 190
+      },
+      "mode": "transparent",
+      "description": "Bảng Biểu tượng động vật đầy đủ (6 ô)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "header_bieu_tuong_dong_vat.png",
+      "path": "04_animals_board/header_bieu_tuong_dong_vat.png",
+      "cropped_path": "cropped/04_animals_board/header_bieu_tuong_dong_vat.png",
+      "source_bbox": [
+        819,
+        80,
+        991,
+        111
+      ],
+      "size": {
+        "width": 172,
+        "height": 31
+      },
+      "mode": "transparent",
+      "description": "Tiêu đề gỗ Biểu tượng động vật"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_bau.png",
+      "path": "04_animals_board/card_bau.png",
+      "cropped_path": "cropped/04_animals_board/card_bau.png",
+      "source_bbox": [
+        805,
+        112,
+        871,
+        185
+      ],
+      "size": {
+        "width": 66,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Bầu (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_ga.png",
+      "path": "04_animals_board/card_ga.png",
+      "cropped_path": "cropped/04_animals_board/card_ga.png",
+      "source_bbox": [
+        872,
+        112,
+        939,
+        185
+      ],
+      "size": {
+        "width": 67,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Gà (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_cua.png",
+      "path": "04_animals_board/card_cua.png",
+      "cropped_path": "cropped/04_animals_board/card_cua.png",
+      "source_bbox": [
+        940,
+        112,
+        1007,
+        185
+      ],
+      "size": {
+        "width": 67,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Cua (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_ca.png",
+      "path": "04_animals_board/card_ca.png",
+      "cropped_path": "cropped/04_animals_board/card_ca.png",
+      "source_bbox": [
+        805,
+        186,
+        871,
+        259
+      ],
+      "size": {
+        "width": 66,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Cá (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_tom.png",
+      "path": "04_animals_board/card_tom.png",
+      "cropped_path": "cropped/04_animals_board/card_tom.png",
+      "source_bbox": [
+        872,
+        186,
+        939,
+        259
+      ],
+      "size": {
+        "width": 67,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Tôm (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "card_nai.png",
+      "path": "04_animals_board/card_nai.png",
+      "cropped_path": "cropped/04_animals_board/card_nai.png",
+      "source_bbox": [
+        940,
+        186,
+        1007,
+        259
+      ],
+      "size": {
+        "width": 67,
+        "height": 73
+      },
+      "mode": "raw_crop",
+      "description": "Ô cược Nai (có khung & tên)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_bau.png",
+      "path": "04_animals_board/icon_bau.png",
+      "cropped_path": "cropped/04_animals_board/icon_bau.png",
+      "source_bbox": [
+        813,
+        118,
+        863,
+        163
+      ],
+      "size": {
+        "width": 44,
+        "height": 45
+      },
+      "mode": "card_icon",
+      "description": "Icon Bầu tách nền (không chữ)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_ga.png",
+      "path": "04_animals_board/icon_ga.png",
+      "cropped_path": "cropped/04_animals_board/icon_ga.png",
+      "source_bbox": [
+        880,
+        118,
+        931,
+        164
+      ],
+      "size": {
+        "width": 50,
+        "height": 44
+      },
+      "mode": "card_icon",
+      "description": "Icon Gà tách nền (không chữ)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_cua.png",
+      "path": "04_animals_board/icon_cua.png",
+      "cropped_path": "cropped/04_animals_board/icon_cua.png",
+      "source_bbox": [
+        948,
+        118,
+        999,
+        163
+      ],
+      "size": {
+        "width": 51,
+        "height": 41
+      },
+      "mode": "card_icon",
+      "description": "Icon Cua tách nền (không chữ)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_ca.png",
+      "path": "04_animals_board/icon_ca.png",
+      "cropped_path": "cropped/04_animals_board/icon_ca.png",
+      "source_bbox": [
+        811,
+        192,
+        864,
+        237
+      ],
+      "size": {
+        "width": 53,
+        "height": 45
+      },
+      "mode": "card_icon",
+      "description": "Icon Cá tách nền (không chữ)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_tom.png",
+      "path": "04_animals_board/icon_tom.png",
+      "cropped_path": "cropped/04_animals_board/icon_tom.png",
+      "source_bbox": [
+        880,
+        192,
+        931,
+        238
+      ],
+      "size": {
+        "width": 51,
+        "height": 44
+      },
+      "mode": "card_icon",
+      "description": "Icon Tôm tách nền (không chữ)"
+    },
+    {
+      "module": "04_animals_board",
+      "filename": "icon_nai.png",
+      "path": "04_animals_board/icon_nai.png",
+      "cropped_path": "cropped/04_animals_board/icon_nai.png",
+      "source_bbox": [
+        948,
+        192,
+        999,
+        238
+      ],
+      "size": {
+        "width": 51,
+        "height": 46
+      },
+      "mode": "card_icon",
+      "description": "Icon Nai tách nền (không chữ)"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "table_scene_full.png",
+      "path": "05_gameplay_table_dice/table_scene_full.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/table_scene_full.png",
+      "source_bbox": [
+        7,
+        202,
+        458,
+        378
+      ],
+      "size": {
+        "width": 451,
+        "height": 176
+      },
+      "mode": "transparent",
+      "description": "Khung cảnh bàn chơi & bát úp đầy đủ"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "bowl_bat_up_transparent.png",
+      "path": "05_gameplay_table_dice/bowl_bat_up_transparent.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/bowl_bat_up_transparent.png",
+      "source_bbox": [
+        162,
+        255,
+        316,
+        336
+      ],
+      "size": {
+        "width": 154,
+        "height": 81
+      },
+      "mode": "bowl",
+      "description": "Bát sứ xanh trắng tách nền trong suốt (dùng cho hiệu ứng mở bát)"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "bowl_bat_up_crop.png",
+      "path": "05_gameplay_table_dice/bowl_bat_up_crop.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/bowl_bat_up_crop.png",
+      "source_bbox": [
+        162,
+        255,
+        316,
+        336
+      ],
+      "size": {
+        "width": 154,
+        "height": 81
+      },
+      "mode": "raw_crop",
+      "description": "Bát sứ xanh trắng kèm mặt bàn gỗ"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "dice_rolling_group.png",
+      "path": "05_gameplay_table_dice/dice_rolling_group.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/dice_rolling_group.png",
+      "source_bbox": [
+        459,
+        214,
+        654,
+        375
+      ],
+      "size": {
+        "width": 195,
+        "height": 161
+      },
+      "mode": "raw_crop",
+      "description": "Cụm 4 xúc xắc đang lắc kèm hiệu ứng xoay vàng"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "dice_3d_1_ga_cua.png",
+      "path": "05_gameplay_table_dice/dice_3d_1_ga_cua.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/dice_3d_1_ga_cua.png",
+      "source_bbox": [
+        464,
+        244,
+        535,
+        312
+      ],
+      "size": {
+        "width": 71,
+        "height": 68
+      },
+      "mode": "dice_3d",
+      "description": "Xúc xắc 3D 1 (Gà - Cua) tách nền"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "dice_3d_2_ga_bau.png",
+      "path": "05_gameplay_table_dice/dice_3d_2_ga_bau.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/dice_3d_2_ga_bau.png",
+      "source_bbox": [
+        528,
+        217,
+        591,
+        281
+      ],
+      "size": {
+        "width": 62,
+        "height": 63
+      },
+      "mode": "dice_3d",
+      "description": "Xúc xắc 3D 2 (Gà - Bầu) tách nền"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "dice_3d_3_cua_tom.png",
+      "path": "05_gameplay_table_dice/dice_3d_3_cua_tom.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/dice_3d_3_cua_tom.png",
+      "source_bbox": [
+        558,
+        276,
+        620,
+        340
+      ],
+      "size": {
+        "width": 62,
+        "height": 64
+      },
+      "mode": "dice_3d",
+      "description": "Xúc xắc 3D 3 (Cua - Tôm) tách nền"
+    },
+    {
+      "module": "05_gameplay_table_dice",
+      "filename": "dice_3d_4_ca_bau.png",
+      "path": "05_gameplay_table_dice/dice_3d_4_ca_bau.png",
+      "cropped_path": "cropped/05_gameplay_table_dice/dice_3d_4_ca_bau.png",
+      "source_bbox": [
+        496,
+        313,
+        558,
+        372
+      ],
+      "size": {
+        "width": 62,
+        "height": 59
+      },
+      "mode": "dice_3d",
+      "description": "Xúc xắc 3D 4 (Cá - Bầu) tách nền"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "btn_bat_dau.png",
+      "path": "06_ui_buttons_room/btn_bat_dau.png",
+      "cropped_path": "cropped/06_ui_buttons_room/btn_bat_dau.png",
+      "source_bbox": [
+        655,
+        274,
+        798,
+        324
+      ],
+      "size": {
+        "width": 142,
+        "height": 50
+      },
+      "mode": "card_icon",
+      "description": "Nút đỏ Bắt đầu"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "btn_tao_phong.png",
+      "path": "06_ui_buttons_room/btn_tao_phong.png",
+      "cropped_path": "cropped/06_ui_buttons_room/btn_tao_phong.png",
+      "source_bbox": [
+        655,
+        323,
+        798,
+        371
+      ],
+      "size": {
+        "width": 140,
+        "height": 48
+      },
+      "mode": "card_icon",
+      "description": "Nút vàng Tạo phòng"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "btn_tham_gia.png",
+      "path": "06_ui_buttons_room/btn_tham_gia.png",
+      "cropped_path": "cropped/06_ui_buttons_room/btn_tham_gia.png",
+      "source_bbox": [
+        655,
+        370,
+        798,
+        419
+      ],
+      "size": {
+        "width": 140,
+        "height": 49
+      },
+      "mode": "card_icon",
+      "description": "Nút xanh Tham gia"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "status_san_sang.png",
+      "path": "06_ui_buttons_room/status_san_sang.png",
+      "cropped_path": "cropped/06_ui_buttons_room/status_san_sang.png",
+      "source_bbox": [
+        800,
+        276,
+        897,
+        316
+      ],
+      "size": {
+        "width": 94,
+        "height": 39
+      },
+      "mode": "card_icon",
+      "description": "Trạng thái Sẵn sàng"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "status_dang_choi.png",
+      "path": "06_ui_buttons_room/status_dang_choi.png",
+      "cropped_path": "cropped/06_ui_buttons_room/status_dang_choi.png",
+      "source_bbox": [
+        800,
+        322,
+        897,
+        361
+      ],
+      "size": {
+        "width": 94,
+        "height": 38
+      },
+      "mode": "card_icon",
+      "description": "Trạng thái Đang chơi..."
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "status_het_gio.png",
+      "path": "06_ui_buttons_room/status_het_gio.png",
+      "cropped_path": "cropped/06_ui_buttons_room/status_het_gio.png",
+      "source_bbox": [
+        800,
+        368,
+        897,
+        407
+      ],
+      "size": {
+        "width": 94,
+        "height": 37
+      },
+      "mode": "card_icon",
+      "description": "Trạng thái Hết giờ!"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "panel_phong_choi.png",
+      "path": "06_ui_buttons_room/panel_phong_choi.png",
+      "cropped_path": "cropped/06_ui_buttons_room/panel_phong_choi.png",
+      "source_bbox": [
+        902,
+        273,
+        1018,
+        423
+      ],
+      "size": {
+        "width": 116,
+        "height": 150
+      },
+      "mode": "transparent",
+      "description": "Bảng gỗ thông tin Phòng chơi"
+    },
+    {
+      "module": "06_ui_buttons_room",
+      "filename": "btn_roi_phong.png",
+      "path": "06_ui_buttons_room/btn_roi_phong.png",
+      "cropped_path": "cropped/06_ui_buttons_room/btn_roi_phong.png",
+      "source_bbox": [
+        916,
+        381,
+        1002,
+        411
+      ],
+      "size": {
+        "width": 84,
+        "height": 30
+      },
+      "mode": "card_icon",
+      "description": "Nút nâu Rời phòng"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "panel_bang_xep_hang.png",
+      "path": "07_leaderboard_win_badges/panel_bang_xep_hang.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/panel_bang_xep_hang.png",
+      "source_bbox": [
+        10,
+        384,
+        218,
+        569
+      ],
+      "size": {
+        "width": 206,
+        "height": 185
+      },
+      "mode": "card_icon",
+      "description": "Bảng gỗ Bảng Xếp Hạng"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "popup_ban_thang_full.png",
+      "path": "07_leaderboard_win_badges/popup_ban_thang_full.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/popup_ban_thang_full.png",
+      "source_bbox": [
+        223,
+        385,
+        454,
+        574
+      ],
+      "size": {
+        "width": 231,
+        "height": 189
+      },
+      "mode": "transparent",
+      "description": "Popup Bạn thắng! +200 điểm kèm nhân vật nâng cúp"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "banner_ban_thang_ribbon.png",
+      "path": "07_leaderboard_win_badges/banner_ban_thang_ribbon.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/banner_ban_thang_ribbon.png",
+      "source_bbox": [
+        231,
+        495,
+        451,
+        573
+      ],
+      "size": {
+        "width": 220,
+        "height": 78
+      },
+      "mode": "transparent",
+      "description": "Băng rôn đỏ Bạn thắng! +200 điểm"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "badge_1_crown.png",
+      "path": "07_leaderboard_win_badges/badge_1_crown.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/badge_1_crown.png",
+      "source_bbox": [
+        467,
+        405,
+        506,
+        450
+      ],
+      "size": {
+        "width": 39,
+        "height": 45
+      },
+      "mode": "transparent",
+      "description": "Huy hiệu Vương miện vàng"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "badge_2_star_gold.png",
+      "path": "07_leaderboard_win_badges/badge_2_star_gold.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/badge_2_star_gold.png",
+      "source_bbox": [
+        509,
+        405,
+        549,
+        450
+      ],
+      "size": {
+        "width": 40,
+        "height": 45
+      },
+      "mode": "transparent",
+      "description": "Huy hiệu Ngôi sao vàng"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "badge_3_star_blue_ribbon.png",
+      "path": "07_leaderboard_win_badges/badge_3_star_blue_ribbon.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/badge_3_star_blue_ribbon.png",
+      "source_bbox": [
+        552,
+        405,
+        589,
+        451
+      ],
+      "size": {
+        "width": 37,
+        "height": 46
+      },
+      "mode": "transparent",
+      "description": "Huy hiệu Sao ruy-băng xanh"
+    },
+    {
+      "module": "07_leaderboard_win_badges",
+      "filename": "badge_4_star_red_ribbon.png",
+      "path": "07_leaderboard_win_badges/badge_4_star_red_ribbon.png",
+      "cropped_path": "cropped/07_leaderboard_win_badges/badge_4_star_red_ribbon.png",
+      "source_bbox": [
+        594,
+        405,
+        629,
+        451
+      ],
+      "size": {
+        "width": 35,
+        "height": 46
+      },
+      "mode": "transparent",
+      "description": "Huy hiệu Sao ruy-băng đỏ"
+    },
+    {
+      "module": "08_chat",
+      "filename": "chat_quick_chuc_may_man.png",
+      "path": "08_chat/chat_quick_chuc_may_man.png",
+      "cropped_path": "cropped/08_chat/chat_quick_chuc_may_man.png",
+      "source_bbox": [
+        467,
+        455,
+        607,
+        487
+      ],
+      "size": {
+        "width": 140,
+        "height": 32
+      },
+      "mode": "transparent",
+      "description": "Tin nhắn nhanh: Chúc may mắn!"
+    },
+    {
+      "module": "08_chat",
+      "filename": "chat_quick_cung_choi_nhe.png",
+      "path": "08_chat/chat_quick_cung_choi_nhe.png",
+      "cropped_path": "cropped/08_chat/chat_quick_cung_choi_nhe.png",
+      "source_bbox": [
+        467,
+        486,
+        607,
+        517
+      ],
+      "size": {
+        "width": 140,
+        "height": 31
+      },
+      "mode": "transparent",
+      "description": "Tin nhắn nhanh: Cùng chơi nhé!"
+    },
+    {
+      "module": "08_chat",
+      "filename": "chat_quick_that_tuyet_voi.png",
+      "path": "08_chat/chat_quick_that_tuyet_voi.png",
+      "cropped_path": "cropped/08_chat/chat_quick_that_tuyet_voi.png",
+      "source_bbox": [
+        467,
+        516,
+        607,
+        547
+      ],
+      "size": {
+        "width": 140,
+        "height": 31
+      },
+      "mode": "transparent",
+      "description": "Tin nhắn nhanh: Thật tuyệt vời!"
+    },
+    {
+      "module": "08_chat",
+      "filename": "chat_input_bar.png",
+      "path": "08_chat/chat_input_bar.png",
+      "cropped_path": "cropped/08_chat/chat_input_bar.png",
+      "source_bbox": [
+        467,
+        548,
+        628,
+        579
+      ],
+      "size": {
+        "width": 161,
+        "height": 31
+      },
+      "mode": "pill_bar",
+      "description": "Thanh nhập tin nhắn kèm nút gửi"
+    },
+    {
+      "module": "08_chat",
+      "filename": "btn_chat_send.png",
+      "path": "08_chat/btn_chat_send.png",
+      "cropped_path": "cropped/08_chat/btn_chat_send.png",
+      "source_bbox": [
+        589,
+        548,
+        627,
+        578
+      ],
+      "size": {
+        "width": 38,
+        "height": 30
+      },
+      "mode": "transparent",
+      "description": "Nút gửi tin nhắn (máy bay giấy)"
+    },
+    {
+      "module": "09_backgrounds",
+      "filename": "bg_1_san_dinh_ngay_tet.png",
+      "path": "09_backgrounds/bg_1_san_dinh_ngay_tet.png",
+      "cropped_path": "cropped/09_backgrounds/bg_1_san_dinh_ngay_tet.png",
+      "source_bbox": [
+        633,
+        427,
+        819,
+        504
+      ],
+      "size": {
+        "width": 186,
+        "height": 77
+      },
+      "mode": "transparent",
+      "description": "Background 1: Sân đình ngày Tết"
+    },
+    {
+      "module": "09_backgrounds",
+      "filename": "bg_2_ben_nuoc_con_do.png",
+      "path": "09_backgrounds/bg_2_ben_nuoc_con_do.png",
+      "cropped_path": "cropped/09_backgrounds/bg_2_ben_nuoc_con_do.png",
+      "source_bbox": [
+        821,
+        427,
+        1018,
+        504
+      ],
+      "size": {
+        "width": 197,
+        "height": 77
+      },
+      "mode": "transparent",
+      "description": "Background 2: Bến nước con đò làng quê"
+    },
+    {
+      "module": "09_backgrounds",
+      "filename": "bg_3_pho_den_long_dem.png",
+      "path": "09_backgrounds/bg_3_pho_den_long_dem.png",
+      "cropped_path": "cropped/09_backgrounds/bg_3_pho_den_long_dem.png",
+      "source_bbox": [
+        633,
+        505,
+        819,
+        580
+      ],
+      "size": {
+        "width": 186,
+        "height": 75
+      },
+      "mode": "transparent",
+      "description": "Background 3: Phố đèn lồng đêm hội"
+    },
+    {
+      "module": "09_backgrounds",
+      "filename": "bg_4_dam_sen_thanh_binh.png",
+      "path": "09_backgrounds/bg_4_dam_sen_thanh_binh.png",
+      "cropped_path": "cropped/09_backgrounds/bg_4_dam_sen_thanh_binh.png",
+      "source_bbox": [
+        821,
+        505,
+        1018,
+        580
+      ],
+      "size": {
+        "width": 197,
+        "height": 75
+      },
+      "mode": "transparent",
+      "description": "Background 4: Đầm sen thanh bình"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lanterns_group_4.png",
+      "path": "10_decorations/decor_lanterns_group_4.png",
+      "cropped_path": "cropped/10_decorations/decor_lanterns_group_4.png",
+      "source_bbox": [
+        7,
+        574,
+        203,
+        680
+      ],
+      "size": {
+        "width": 196,
+        "height": 94
+      },
+      "mode": "transparent",
+      "description": "Cụm 4 đèn lồng Tết"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lantern_1_round_red.png",
+      "path": "10_decorations/decor_lantern_1_round_red.png",
+      "cropped_path": "cropped/10_decorations/decor_lantern_1_round_red.png",
+      "source_bbox": [
+        7,
+        574,
+        60,
+        680
+      ],
+      "size": {
+        "width": 53,
+        "height": 94
+      },
+      "mode": "transparent",
+      "description": "Đèn lồng 1: Tròn đỏ lớn"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lantern_2_oval_red.png",
+      "path": "10_decorations/decor_lantern_2_oval_red.png",
+      "cropped_path": "cropped/10_decorations/decor_lantern_2_oval_red.png",
+      "source_bbox": [
+        58,
+        580,
+        107,
+        680
+      ],
+      "size": {
+        "width": 48,
+        "height": 88
+      },
+      "mode": "transparent",
+      "description": "Đèn lồng 2: Bầu dục đỏ"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lantern_3_round_red.png",
+      "path": "10_decorations/decor_lantern_3_round_red.png",
+      "cropped_path": "cropped/10_decorations/decor_lantern_3_round_red.png",
+      "source_bbox": [
+        105,
+        580,
+        154,
+        680
+      ],
+      "size": {
+        "width": 48,
+        "height": 88
+      },
+      "mode": "transparent",
+      "description": "Đèn lồng 3: Tròn đỏ vừa"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lantern_4_yellow.png",
+      "path": "10_decorations/decor_lantern_4_yellow.png",
+      "cropped_path": "cropped/10_decorations/decor_lantern_4_yellow.png",
+      "source_bbox": [
+        152,
+        584,
+        203,
+        680
+      ],
+      "size": {
+        "width": 50,
+        "height": 84
+      },
+      "mode": "transparent",
+      "description": "Đèn lồng 4: Vàng truyền thống"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_clouds_gold_group.png",
+      "path": "10_decorations/decor_clouds_gold_group.png",
+      "cropped_path": "cropped/10_decorations/decor_clouds_gold_group.png",
+      "source_bbox": [
+        202,
+        584,
+        299,
+        681
+      ],
+      "size": {
+        "width": 96,
+        "height": 97
+      },
+      "mode": "transparent",
+      "description": "Cụm mây vàng truyền thống (2 đám)"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_cloud_gold_top.png",
+      "path": "10_decorations/decor_cloud_gold_top.png",
+      "cropped_path": "cropped/10_decorations/decor_cloud_gold_top.png",
+      "source_bbox": [
+        206,
+        584,
+        299,
+        631
+      ],
+      "size": {
+        "width": 91,
+        "height": 47
+      },
+      "mode": "transparent",
+      "description": "Đám mây vàng (nhỏ ở trên)"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_cloud_gold_bottom.png",
+      "path": "10_decorations/decor_cloud_gold_bottom.png",
+      "cropped_path": "cropped/10_decorations/decor_cloud_gold_bottom.png",
+      "source_bbox": [
+        202,
+        631,
+        297,
+        681
+      ],
+      "size": {
+        "width": 95,
+        "height": 50
+      },
+      "mode": "transparent",
+      "description": "Đám mây vàng (lớn ở dưới)"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_lotus_flowers_leaves.png",
+      "path": "10_decorations/decor_lotus_flowers_leaves.png",
+      "cropped_path": "cropped/10_decorations/decor_lotus_flowers_leaves.png",
+      "source_bbox": [
+        298,
+        580,
+        541,
+        681
+      ],
+      "size": {
+        "width": 243,
+        "height": 97
+      },
+      "mode": "transparent",
+      "description": "Cụm hoa sen & lá sen"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_bamboo_cluster.png",
+      "path": "10_decorations/decor_bamboo_cluster.png",
+      "cropped_path": "cropped/10_decorations/decor_bamboo_cluster.png",
+      "source_bbox": [
+        516,
+        580,
+        678,
+        681
+      ],
+      "size": {
+        "width": 162,
+        "height": 98
+      },
+      "mode": "transparent",
+      "description": "Cụm bụi tre xanh làng quê"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_wooden_boat.png",
+      "path": "10_decorations/decor_wooden_boat.png",
+      "cropped_path": "cropped/10_decorations/decor_wooden_boat.png",
+      "source_bbox": [
+        674,
+        600,
+        792,
+        676
+      ],
+      "size": {
+        "width": 117,
+        "height": 66
+      },
+      "mode": "card_icon",
+      "description": "Thuyền gỗ (con đò)"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_non_la_scroll.png",
+      "path": "10_decorations/decor_non_la_scroll.png",
+      "cropped_path": "cropped/10_decorations/decor_non_la_scroll.png",
+      "source_bbox": [
+        795,
+        594,
+        861,
+        681
+      ],
+      "size": {
+        "width": 65,
+        "height": 83
+      },
+      "mode": "card_icon",
+      "description": "Nón lá & câu đối đỏ"
+    },
+    {
+      "module": "10_decorations",
+      "filename": "decor_thatched_house.png",
+      "path": "10_decorations/decor_thatched_house.png",
+      "cropped_path": "cropped/10_decorations/decor_thatched_house.png",
+      "source_bbox": [
+        858,
+        582,
+        1017,
+        681
+      ],
+      "size": {
+        "width": 159,
+        "height": 99
+      },
+      "mode": "transparent",
+      "description": "Nhà tranh mái lá & bụi chuối"
+    }
+  ]
+}
