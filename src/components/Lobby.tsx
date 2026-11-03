@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DEFAULT_AVATARS, Player, RoomSummary } from '@/types';
 import { sound } from '@/lib/sound';
-import { Plus, Users, Lock, RefreshCw, KeyRound, Sparkles } from 'lucide-react';
+import { Plus, Users, Lock, RefreshCw, KeyRound, Sparkles, Volume2, VolumeX } from 'lucide-react';
 
 interface LobbyProps {
   player: Player | null;
@@ -43,6 +43,11 @@ export const Lobby: React.FC<LobbyProps> = ({
   // Join by code inputs
   const [joinCode, setJoinCode] = useState('');
   const [joinPasscode, setJoinPasscode] = useState('');
+  const [isMuted, setIsMuted] = useState(sound.getMuted());
+
+  useEffect(() => {
+    return sound.subscribe((muted) => setIsMuted(muted));
+  }, []);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +78,25 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 flex flex-col items-center">
+      {/* Top Sound Toggle Bar */}
+      <div className="w-full flex justify-end mb-1">
+        <button
+          type="button"
+          onClick={() => {
+            sound.toggleMute();
+          }}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border text-xs font-black transition active:scale-95 shadow-sm ${
+            isMuted
+              ? 'bg-red-950/90 text-red-300 border-red-500/60 hover:bg-red-900'
+              : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:bg-emerald-900'
+          }`}
+          title={isMuted ? 'Bật âm thanh hiệu ứng' : 'Tắt âm thanh hiệu ứng'}
+        >
+          {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          <span>{isMuted ? 'Âm thanh: TẮT' : 'Âm thanh: BẬT'}</span>
+        </button>
+      </div>
+
       {/* Game Branding Header */}
       <div className="flex flex-col items-center my-4 text-center">
         <div className="relative w-44 sm:w-56 mb-2">

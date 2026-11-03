@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player, Room } from '@/types';
 import { sound } from '@/lib/sound';
 import { Volume2, VolumeX, Copy, Check, PlusCircle, LogOut, Crown } from 'lucide-react';
@@ -21,6 +21,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [copied, setCopied] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.getMuted());
 
+  useEffect(() => {
+    return sound.subscribe((muted) => setIsMuted(muted));
+  }, []);
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(room.code);
     setCopied(true);
@@ -28,8 +32,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   const handleToggleSound = () => {
-    const muted = sound.toggleMute();
-    setIsMuted(muted);
+    sound.toggleMute();
   };
 
   return (
@@ -82,13 +85,18 @@ export const TopBar: React.FC<TopBarProps> = ({
           </button>
         </div>
 
-        {/* Audio Toggle */}
+        {/* Audio Toggle with Clear Status Badge */}
         <button
           onClick={handleToggleSound}
-          className="p-2 rounded-full bg-red-900/50 hover:bg-red-800 text-amber-300 border border-amber-500/30 transition active:scale-95"
-          title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border text-xs font-black transition active:scale-95 shadow-sm ${
+            isMuted
+              ? 'bg-red-950/90 text-red-300 border-red-500/60 hover:bg-red-900'
+              : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:bg-emerald-900'
+          }`}
+          title={isMuted ? 'Bật âm thanh hiệu ứng' : 'Tắt âm thanh hiệu ứng'}
         >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          <span className="hidden xs:inline">{isMuted ? 'Tắt âm' : 'Bật âm'}</span>
         </button>
 
         {/* Leave Room Button */}

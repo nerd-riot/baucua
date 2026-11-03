@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { DiceResult, Player, Room, RoundState, SYMBOLS, SymbolId } from '@/types';
 import { sound } from '@/lib/sound';
-import { Play, Lock, Sparkles, Clock, Flame, Eye } from 'lucide-react';
+import { Play, Lock, Sparkles, Clock, Flame, Eye, Volume2, VolumeX } from 'lucide-react';
 
 interface DiceShakerProps {
   room: Room;
@@ -56,7 +56,12 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
   const diceResult: DiceResult | undefined = currentRound.diceResult;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [isMuted, setIsMuted] = useState<boolean>(() => sound.getMuted());
   const autoLockTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    return sound.subscribe((muted) => setIsMuted(muted));
+  }, []);
   const [trollQuote, setTrollQuote] = useState<string>(() => {
     return TROLL_SUSPENSE_QUOTES[Math.floor(Math.random() * TROLL_SUSPENSE_QUOTES.length)];
   });
@@ -134,47 +139,25 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
       const t2 = setTimeout(() => sound.playDiceLand(), 550);
       const t3 = setTimeout(() => sound.playDiceLand(), 850);
 
-      // 3. Fireworks celebration burst when all 3 dice are on the plate
+      // 3. Subtle & refined celebration burst (ít pháo hoa, tinh tế, không che màn hình)
       const tFire = setTimeout(() => {
         sound.playFireworkBurst();
         try {
-          // Left cannon
           confetti({
-            particleCount: 55,
-            angle: 60,
-            spread: 60,
-            origin: { x: 0.15, y: 0.6 },
-            colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a', '#ec4899'],
-          });
-          // Right cannon
-          confetti({
-            particleCount: 55,
-            angle: 120,
-            spread: 60,
-            origin: { x: 0.85, y: 0.6 },
-            colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a', '#3b82f6'],
+            particleCount: 26,
+            spread: 48,
+            origin: { y: 0.6 },
+            scalar: 0.85,
+            colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a'],
           });
         } catch {}
-      }, 900);
-
-      // 4. Secondary celebration shower
-      const tFire2 = setTimeout(() => {
-        try {
-          confetti({
-            particleCount: 40,
-            spread: 90,
-            origin: { y: 0.5 },
-            colors: ['#ffd700', '#ff4500', '#00ffcc', '#ffffff'],
-          });
-        } catch {}
-      }, 1400);
+      }, 950);
 
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
         clearTimeout(t3);
         clearTimeout(tFire);
-        clearTimeout(tFire2);
       };
     }
   }, [state, diceResult]);
@@ -223,13 +206,34 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
           </span>
         </div>
 
-        {/* Countdown Badge */}
-        {state === 'BETTING' && (
-          <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/60 px-3 py-1 rounded-full font-mono font-black text-sm shadow-gold-glow animate-pulse">
-            <Clock size={15} />
-            <span>{timeLeft}s</span>
-          </div>
-        )}
+        {/* Right side of Header: Sound Toggle & Countdown */}
+        <div className="flex items-center space-x-2 shrink-0">
+          {/* Quick Sound Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextMuted = sound.toggleMute();
+              setIsMuted(nextMuted);
+            }}
+            className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-black border transition active:scale-95 ${
+              isMuted
+                ? 'bg-red-950/90 text-red-300 border-red-500/60 hover:bg-red-900'
+                : 'bg-black/60 text-amber-300 border-amber-500/40 hover:bg-amber-900/40'
+            }`}
+            title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            <span className="text-[10px] hidden xs:inline">{isMuted ? 'Tắt âm' : 'Bật âm'}</span>
+          </button>
+
+          {/* Countdown Badge */}
+          {state === 'BETTING' && (
+            <div className="flex items-center space-x-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/60 px-3 py-1 rounded-full font-mono font-black text-sm shadow-gold-glow animate-pulse">
+              <Clock size={15} />
+              <span>{timeLeft}s</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Plate and Bowl Stage with 3D Perspective */}
@@ -303,10 +307,10 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                     damping: 14,
                     delay: delays[idx],
                   }}
-                  className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.7),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center justify-between border-2 border-amber-400"
+                  className="relative w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.8),0_0_20px_rgba(245,158,11,0.6)] flex flex-col items-center justify-between border-2 border-amber-400"
                 >
                   {/* Dice Inner Mascot Artwork */}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden shadow-inner border border-amber-400/40 bg-black/10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden shadow-inner border border-amber-400/50 bg-black/10">
                     <img
                       src={getSymbolImage(sym)}
                       alt={SYMBOLS[sym].nameVi}
@@ -314,7 +318,7 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                     />
                   </div>
                   {/* Animal Vietnamese Name Badge */}
-                  <div className="bg-red-900/90 text-amber-300 text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full border border-amber-400/50 uppercase tracking-tight shadow">
+                  <div className="bg-red-900/90 text-amber-300 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full border border-amber-400/50 uppercase tracking-tight shadow">
                     {SYMBOLS[sym].nameVi}
                   </div>
                 </motion.div>

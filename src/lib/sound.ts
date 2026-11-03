@@ -3,9 +3,38 @@
  * Zero external audio files required, zero latency, guaranteed to work across browsers!
  */
 
+type SoundListener = (muted: boolean) => void;
+
 class SoundEffects {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private listeners = new Set<SoundListener>();
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('bau_cua_muted');
+        if (saved !== null) {
+          this.isMuted = saved === 'true';
+        }
+      } catch {}
+    }
+  }
+
+  public subscribe(fn: SoundListener): () => void {
+    this.listeners.add(fn);
+    return () => {
+      this.listeners.delete(fn);
+    };
+  }
+
+  private notify() {
+    this.listeners.forEach((fn) => {
+      try {
+        fn(this.isMuted);
+      } catch {}
+    });
+  }
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -23,7 +52,23 @@ class SoundEffects {
 
   public toggleMute(): boolean {
     this.isMuted = !this.isMuted;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('bau_cua_muted', String(this.isMuted));
+      } catch {}
+    }
+    this.notify();
     return this.isMuted;
+  }
+
+  public setMute(muted: boolean): void {
+    this.isMuted = muted;
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('bau_cua_muted', String(this.isMuted));
+      } catch {}
+    }
+    this.notify();
   }
 
   public getMuted(): boolean {

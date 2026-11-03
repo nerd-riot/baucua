@@ -176,12 +176,11 @@ export default function Home() {
           }
         }
 
-        // Suspense timing: delay WinModal by 4.5s so players enjoy the dramatic bowl opening,
-        // 3D dice tumbling onto the plate, and fireworks!
+        // Suspense timing: wait 5s after bowl reveal before opening WinModal
         if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
         winModalTimerRef.current = setTimeout(() => {
           setShowWinModal(true);
-        }, 4500);
+        }, 5000);
       },
       onChatMessage: (msg) => {
         setChatMessages((prev) => [...prev.slice(-49), msg]);

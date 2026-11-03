@@ -151,12 +151,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 )}
               </div>
 
-              {/* 3D Mascot Image */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden my-1 shadow-inner border border-amber-500/30 bg-black/40">
+              {/* 3D Mascot Image - Large, Prominent & Beautiful */}
+              <div className="relative w-full aspect-square max-w-[170px] sm:max-w-[210px] rounded-2xl overflow-hidden my-1.5 shadow-[0_8px_16px_rgba(0,0,0,0.6)] border-2 border-amber-400/50 bg-black/50">
                 <img
                   src={getSymbolImage(symbol)}
                   alt={meta.nameVi}
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                 />
               </div>
 

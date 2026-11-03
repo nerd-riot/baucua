@@ -28,12 +28,13 @@ export const WinModal: React.FC<WinModalProps> = ({
   useEffect(() => {
     if (hasWon) {
       sound.playWin();
-      // Trigger festive fireworks
+      // Subtle festive sparkle
       try {
         confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
+          particleCount: 22,
+          spread: 50,
+          origin: { y: 0.65 },
+          scalar: 0.85,
           colors: ['#f59e0b', '#ef4444', '#10b981', '#fef08a'],
         });
       } catch {}
@@ -91,23 +92,28 @@ export const WinModal: React.FC<WinModalProps> = ({
             {hasWon ? 'Chúc Mừng Chiến Thắng!' : 'Kết Quả Ván Đấu'}
           </h2>
 
-          {/* Rolled Dice Showcase */}
+          {/* Rolled Dice Showcase - Large & Beautiful 3D Mascots */}
           {round.diceResult && (
-            <div className="flex items-center justify-center gap-3 my-4">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-4 my-4">
               {round.diceResult.map((sym, idx) => (
-                <div
+                <motion.div
                   key={idx}
-                  className="flex flex-col items-center bg-black/50 p-2 rounded-xl border border-amber-500/40 shadow-inner"
+                  initial={{ scale: 0.8, y: 10 }}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex flex-col items-center bg-gradient-to-b from-amber-950/80 via-black to-black p-2 sm:p-3 rounded-2xl border-2 border-amber-400 shadow-[0_8px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(245,158,11,0.4)]"
                 >
-                  <img
-                    src={getSymbolImage(sym)}
-                    alt={SYMBOLS[sym].nameVi}
-                    className="w-12 h-12 object-cover rounded-lg"
-                  />
-                  <span className="text-[10px] font-black text-amber-300 mt-1 uppercase">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white/5 border border-amber-500/30 mb-1.5 shadow-inner">
+                    <img
+                      src={getSymbolImage(sym)}
+                      alt={SYMBOLS[sym].nameVi}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wider bg-red-950/90 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow">
                     {SYMBOLS[sym].nameVi}
                   </span>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
