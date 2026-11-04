@@ -5,6 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: __dirname,
   images: {
     unoptimized: true,
   },
@@ -13,6 +14,10 @@ const nextConfig = {
       path.resolve(__dirname, 'node_modules'),
       'node_modules',
     ];
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      process: path.resolve(__dirname, 'node_modules/next/dist/compiled/process/browser.js'),
+    };
     return config;
   },
 };

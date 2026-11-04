@@ -88,5 +88,102 @@ describe('Vercel-Native RoomStore Logic', () => {
     assert(rollRes.diceResult);
     assert.strictEqual(rollRes.diceResult.length, 3);
     assert.strictEqual(room.currentRound.state, 'REVEALED');
+
+    // Verify zero-sum economy between Host (Nhà Cái) and Player 2
+    // Both started at 1000 (total 2000). After settlement, host + p2 points must equal 2000!
+    assert.strictEqual(room.players[host.id].points + room.players[p2.id].points, 2000);
+  });
+
+  it('prevents host from betting in player-dealer room, and allows creator to bet in bot-dealer room', () => {
+    const store = getRoomStore();
+    const host = store.registerPlayer('dev_h_mode', 'Host Mode', 'char_boy_ao_dai_xanh');
+    const playerDealerRoom = store.createRoom(host, {
+      name: 'Player Dealer Room',
+      isPrivate: false,
+      dealerType: 'player',
+    });
+    store.startRound(playerDealerRoom.id, 20);
+
+    // Host cannot bet when host is dealer
+    const hostBet = store.placeBet(playerDealerRoom.id, host.id, {
+      roomId: playerDealerRoom.id,
+      symbol: SymbolId.BAU,
+      amount: 50,
+      clientBetId: 'host_self_bet_1',
+    });
+    assert.strictEqual(hostBet.success, false);
+
+    // Creator CAN bet when room is created with Bot as dealer
+    const creator = store.registerPlayer('dev_c_bot', 'Creator Bot Room', 'char_girl_ao_dai_do');
+    const botDealerRoom = store.createRoom(creator, {
+      name: 'Bot Dealer Room',
+      isPrivate: false,
+      dealerType: 'bot',
+    });
+    assert.strictEqual(botDealerRoom.dealerType, 'bot');
+    store.startRound(botDealerRoom.id, 20);
+
+    const creatorBet = store.placeBet(botDealerRoom.id, creator.id, {
+      roomId: botDealerRoom.id,
+      symbol: SymbolId.CUA,
+      amount: 100,
+      clientBetId: 'creator_bot_bet_1',
+    });
+    assert.strictEqual(creatorBet.success, true);
+    assert.strictEqual(creatorBet.newBalance, 900);
+  });
+
+  it('provides a permanent default Bot room (BAUCUA) that persists after players leave', () => {
+    const store = getRoomStore();
+    const defaultRoom = store.getRoom('BAUCUA');
+    assert(defaultRoom);
+    assert.strictEqual(defaultRoom.dealerType, 'bot');
+    assert.strictEqual(defaultRoom.isDefault, true);
+
+    const p = store.registerPlayer('dev_join_def', 'Joiner', 'char_boy_ao_dai_xanh');
+    const joinRes = store.joinRoom(p, 'BAUCUA');
+    assert.strictEqual(joinRes.success, true);
+
+    const leaveRes = store.leaveRoom(p.id, defaultRoom.id);
+    assert.strictEqual(leaveRes.roomDeleted, false);
+    assert(store.getRoom('BAUCUA'));
+  });
+
+  it('allows players to withdraw/cancel bets per symbol or all symbols during BETTING', () => {
+    const store = getRoomStore();
+    const creator = store.registerPlayer('dev_cancel_1', 'Cancel Tester', 'char_boy_ao_dai_xanh');
+    const room = store.createRoom(creator, {
+      name: 'Cancel Bet Room',
+      isPrivate: false,
+      dealerType: 'bot',
+    });
+
+    store.startRound(room.id, 20);
+    store.placeBet(room.id, creator.id, {
+      roomId: room.id,
+      symbol: SymbolId.BAU,
+      amount: 100,
+      clientBetId: 'cb_1',
+    });
+    store.placeBet(room.id, creator.id, {
+      roomId: room.id,
+      symbol: SymbolId.CUA,
+      amount: 200,
+      clientBetId: 'cb_2',
+    });
+    assert.strictEqual(room.players[creator.id].points, 700);
+
+    // Withdraw only BAU (100 pts)
+    const cancelBau = store.cancelBets(room.id, creator.id, SymbolId.BAU);
+    assert.strictEqual(cancelBau.success, true);
+    assert.strictEqual(cancelBau.refundedAmount, 100);
+    assert.strictEqual(cancelBau.newBalance, 800);
+
+    // Withdraw remaining bets (CUA: 200 pts)
+    const cancelAll = store.cancelBets(room.id, creator.id);
+    assert.strictEqual(cancelAll.success, true);
+    assert.strictEqual(cancelAll.refundedAmount, 200);
+    assert.strictEqual(cancelAll.newBalance, 1000);
+    assert.strictEqual(room.players[creator.id].points, 1000);
   });
 });

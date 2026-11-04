@@ -44,12 +44,15 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
   onShowResultModal,
 }) => {
   const currentRound = room.currentRound;
-  const isHost = room.hostId === currentPlayer.id;
+  const isPlayerHost = room.dealerType === 'player' && room.hostId === currentPlayer.id;
+  const isBotRoom = room.dealerType === 'bot';
   const state: RoundState = currentRound.state;
   const diceResult: DiceResult | undefined = currentRound.diceResult;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [nextRoundTimeLeft, setNextRoundTimeLeft] = useState<number>(0);
   const autoLockTriggeredRef = useRef(false);
+  const autoStartTriggeredRef = useRef(false);
   const [trollQuote, setTrollQuote] = useState<string>(() => {
     return TROLL_SUSPENSE_QUOTES[Math.floor(Math.random() * TROLL_SUSPENSE_QUOTES.length)];
   });
@@ -72,12 +75,21 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
     }
   }, [state]);
 
-  // Reset autoLock flag on new round
+  // Reset auto flags on new round
   useEffect(() => {
     if (state === 'BETTING') {
       autoLockTriggeredRef.current = false;
+      autoStartTriggeredRef.current = false;
     }
   }, [state, currentRound.id]);
+
+  // If Bot room is ever in WAITING state, automatically trigger startRound immediately
+  useEffect(() => {
+    if (isBotRoom && state === 'WAITING' && !autoStartTriggeredRef.current) {
+      autoStartTriggeredRef.current = true;
+      onStartRound();
+    }
+  }, [isBotRoom, state, onStartRound]);
 
   // Countdown timer calculation + count_down_time_up sound when 3-4s remain
   useEffect(() => {
@@ -98,15 +110,37 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
         sound.playTick();
       }
 
-      // Auto lock betting when time expires
-      if (remainingMs <= 0 && isHost && !autoLockTriggeredRef.current) {
+      // Auto lock betting when time expires (for player host or bot room backup)
+      if (remainingMs <= 0 && (isPlayerHost || isBotRoom) && !autoLockTriggeredRef.current) {
         autoLockTriggeredRef.current = true;
         onLockBetting();
       }
     }, 400);
 
     return () => clearInterval(interval);
-  }, [state, currentRound.bettingEndsAt, isHost, onLockBetting]);
+  }, [state, currentRound.bettingEndsAt, isPlayerHost, isBotRoom, onLockBetting]);
+
+  // Countdown for Bot's automatic next round during REVEALED state
+  useEffect(() => {
+    if (!isBotRoom || state !== 'REVEALED' || !currentRound.settledAt) {
+      setNextRoundTimeLeft(0);
+      return;
+    }
+
+    const updateNextCountdown = () => {
+      const remainingMs = Math.max(0, currentRound.settledAt! + 14000 - Date.now());
+      const secs = Math.ceil(remainingMs / 1000);
+      setNextRoundTimeLeft(secs);
+      if (remainingMs <= 0 && !autoStartTriggeredRef.current) {
+        autoStartTriggeredRef.current = true;
+        onStartRound();
+      }
+    };
+
+    updateNextCountdown();
+    const interval = setInterval(updateNextCountdown, 400);
+    return () => clearInterval(interval);
+  }, [isBotRoom, state, currentRound.settledAt, onStartRound]);
 
   // Handle ROLLING state: Play looping shake.mp3 sound + countdown time up climax
   useEffect(() => {
@@ -311,15 +345,15 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
                   }
                 : state === 'REVEALED'
                 ? {
-                    x: [0, -10, 48, 60],
-                    y: [0, -22, -100, -115],
-                    rotateZ: [0, -10, 30, 36],
-                    rotateX: [0, 24, 30, 26],
-                    rotateY: [0, 10, -16, -12],
-                    scale: [1, 1.04, 1.05, 0.94],
-                    opacity: [1, 1, 0.96, 0.92],
+                    x: [0, 18, 115, 136],
+                    y: [0, -14, -6, 0],
+                    rotateZ: [0, 8, 22, 26],
+                    rotateX: [0, 14, 18, 14],
+                    rotateY: [0, 10, -14, -10],
+                    scale: [1, 1.02, 0.84, 0.78],
+                    opacity: [1, 1, 0.96, 0.95],
                     transition: {
-                      duration: 1.25,
+                      duration: 1.15,
                       times: [0, 0.22, 0.72, 1],
                       ease: [0.22, 1, 0.36, 1],
                     },
@@ -381,9 +415,9 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
         </motion.div>
       )}
 
-      {/* Host Controls & Action Buttons */}
+      {/* Host / Bot Controls & Action Buttons */}
       <div className="mt-0.5 flex flex-wrap items-center justify-center gap-2 w-full">
-        {isHost ? (
+        {isPlayerHost ? (
           <>
             {(state === 'WAITING' || state === 'REVEALED') && (
               <button
@@ -411,9 +445,19 @@ export const DiceShaker: React.FC<DiceShakerProps> = ({
               </button>
             )}
           </>
+        ) : room.dealerType === 'bot' ? (
+          <div className="text-xs font-bold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-3 py-1.5 rounded-full text-center">
+            {state === 'WAITING' && '🤖 Nhà Cái Bot đang tự động mở ván mới...'}
+            {state === 'BETTING' && '🔥 Hãy chọn mệnh giá và đặt cược! Bot sẽ tự xóc khi hết giờ'}
+            {state === 'ROLLING' && '⚡ Nhà Cái Bot đang xóc đĩa, nín thở chờ mở bát!'}
+            {state === 'REVEALED' &&
+              (nextRoundTimeLeft > 0
+                ? `🤖 Nhà Cái Bot tự động mở ván mới sau ${nextRoundTimeLeft}s...`
+                : '🤖 Nhà Cái Bot đang chuẩn bị ván tiếp theo...')}
+          </div>
         ) : (
           <div className="text-xs font-bold text-amber-200/90 bg-red-950/70 border border-amber-500/30 px-3 py-1.5 rounded-full text-center">
-            {state === 'WAITING' && '🏮 Đang đợi chủ phòng mở ván mới...'}
+            {state === 'WAITING' && '🏮 Đang đợi Nhà Cái mở ván mới...'}
             {state === 'BETTING' && '🔥 Hãy chọn linh vật và tất tay ngay!'}
             {state === 'ROLLING' && '⚡ Bát đang xóc, nín thở chờ mở bát!'}
             {state === 'REVEALED' && '✨ Vòng cược đã kết thúc, chuẩn bị ván mới!'}

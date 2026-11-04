@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, isPrivate, passcode, maxPlayers, deviceId, nickname, avatarId } = body;
+    const { name, isPrivate, passcode, maxPlayers, dealerType, deviceId, nickname, avatarId } = body;
 
     const store = getRoomStore();
     const creator = store.registerPlayer(
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       isPrivate: !!isPrivate,
       passcode,
       maxPlayers: maxPlayers || 30,
+      dealerType: dealerType === 'bot' ? 'bot' : 'player',
     });
 
     return NextResponse.json({ success: true, room, player: creator });

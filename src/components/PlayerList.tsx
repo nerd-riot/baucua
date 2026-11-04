@@ -72,7 +72,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ room, currentPlayer }) =
                   </span>
                   {isHost && (
                     <span className="text-[10px] text-amber-400/80 font-bold flex items-center gap-0.5">
-                      👑 Chủ phòng
+                      {p.isBot ? '🤖 Nhà Cái Bot' : '👑 Nhà Cái (Chủ phòng)'}
                     </span>
                   )}
                 </div>

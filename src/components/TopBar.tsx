@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Player, Room } from '@/types';
 import { sound } from '@/lib/sound';
-import { Volume2, VolumeX, Copy, Check, PlusCircle, LogOut, Crown } from 'lucide-react';
+import { Volume2, VolumeX, Copy, Check, PlusCircle, LogOut, Crown, Bot } from 'lucide-react';
 
 interface TopBarProps {
   room: Room;
@@ -44,9 +44,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span className="font-bold text-amber-300 text-sm md:text-base tracking-wide flex items-center gap-1.5">
               🏮 {room.name}
             </span>
-            {room.hostId === currentPlayer.id && (
+            {room.dealerType === 'bot' ? (
+              <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-0.5 rounded-full border border-emerald-500/40 flex items-center gap-1">
+                <Bot size={12} className="text-emerald-400" /> Bot làm Cái
+              </span>
+            ) : room.hostId === currentPlayer.id ? (
               <span className="bg-amber-500/20 text-amber-300 text-xs px-2 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1">
-                <Crown size={12} className="text-amber-400" /> Chủ phòng
+                <Crown size={12} className="text-amber-400" /> Bạn là Nhà Cái
+              </span>
+            ) : (
+              <span className="bg-amber-500/20 text-amber-300 text-xs px-2 py-0.5 rounded-full border border-amber-500/40 flex items-center gap-1">
+                <Crown size={12} className="text-amber-400" /> Nhà Cái: {room.players[room.hostId]?.nickname || 'Chủ phòng'}
               </span>
             )}
           </div>

@@ -170,4 +170,85 @@ describe('Settlement Engine — Payout & Profit Rules', () => {
     assert.strictEqual(cuaSummary.bettors[1].amount, 50);
     assert.strictEqual(cuaSummary.bettors[1].isMe, true);
   });
+
+  it('settles dealer (Nhà Cái) balance: dealer pays winners and earns from losers', () => {
+    const dice: [SymbolId, SymbolId, SymbolId] = [SymbolId.BAU, SymbolId.BAU, SymbolId.GA];
+    const players: Record<string, Player> = {
+      host_1: {
+        id: 'host_1',
+        nickname: 'Nhà Cái Khoa',
+        avatarId: 'char_boy_ao_dai_xanh',
+        points: 1000,
+        deviceId: 'dev_host',
+        isReady: true,
+        isHost: true,
+        connected: true,
+        joinedAt: 0,
+        lastActiveAt: 0,
+      },
+      p1: {
+        id: 'p1',
+        nickname: 'Người Chơi 1',
+        avatarId: 'char_girl_ao_dai_do',
+        points: 900, // bet 100 reserved from 1000
+        deviceId: 'dev_p1',
+        isReady: true,
+        isHost: false,
+        connected: true,
+        joinedAt: 0,
+        lastActiveAt: 0,
+      },
+      p2: {
+        id: 'p2',
+        nickname: 'Người Chơi 2',
+        avatarId: 'char_boy_ao_ba_ba_nau',
+        points: 700, // bet 300 reserved from 1000
+        deviceId: 'dev_p2',
+        isReady: true,
+        isHost: false,
+        connected: true,
+        joinedAt: 0,
+        lastActiveAt: 0,
+      },
+    };
+
+    // p1 bets 100 on BAU (2 matches -> gross 300, net +200)
+    // p2 bets 300 on CUA (0 matches -> gross 0, net -300)
+    // Dealer receives 400 total bets, pays out 300 gross -> Dealer netProfit = +100, newBalance = 1100
+    const bets: Bet[] = [
+      {
+        id: 'b1',
+        clientBetId: 'c1',
+        roomId: 'r1',
+        roundId: 'rnd1',
+        playerId: 'p1',
+        symbol: SymbolId.BAU,
+        amount: 100,
+        payoutAmount: 0,
+        netProfit: 0,
+        createdAt: 0,
+      },
+      {
+        id: 'b2',
+        clientBetId: 'c2',
+        roomId: 'r1',
+        roundId: 'rnd1',
+        playerId: 'p2',
+        symbol: SymbolId.CUA,
+        amount: 300,
+        payoutAmount: 0,
+        netProfit: 0,
+        createdAt: 0,
+      },
+    ];
+
+    const outcome = settleRound(dice, bets, players, 'host_1');
+    const dealerSettlement = outcome.playerSettlements.find((s) => s.playerId === 'host_1');
+    assert(dealerSettlement);
+    assert.strictEqual(dealerSettlement.isDealer, true);
+    assert.strictEqual(dealerSettlement.totalBet, 400);
+    assert.strictEqual(dealerSettlement.grossPayout, 300);
+    assert.strictEqual(dealerSettlement.netProfit, 100);
+    assert.strictEqual(dealerSettlement.newBalance, 1100);
+  });
 });

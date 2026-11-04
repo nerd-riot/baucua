@@ -63,11 +63,15 @@ export function calculateBetPayout(betAmount: number, matchCount: number): {
 
 /**
  * Settles all bets in a round against the rolled dice.
+ * When `dealerId` is provided, also computes the dealer's (Nhà Cái's) settlement:
+ * - Dealer earns all losing bets and pays all winning rewards out of their balance.
+ * - Dealer net profit = totalBetsFromPlayers - totalGrossPayoutToPlayers.
  */
 export function settleRound(
   dice: DiceResult,
   bets: Bet[],
-  players: Record<string, Player>
+  players: Record<string, Player>,
+  dealerId?: string
 ): SettlementOutcome {
   const matches = countMatches(dice);
   let totalPayoutDistributed = 0;
@@ -134,6 +138,33 @@ export function settleRound(
       };
     }
   );
+
+  // If a dealerId is specified and didn't bet against themselves, calculate dealer settlement
+  if (dealerId && players[dealerId] && !playerStats[dealerId] && bets.length > 0) {
+    const dealer = players[dealerId];
+    let totalPlayerBets = 0;
+    let totalPlayerGrossPayout = 0;
+
+    for (const s of playerSettlements) {
+      totalPlayerBets += s.totalBet;
+      totalPlayerGrossPayout += s.grossPayout;
+    }
+
+    const dealerNetProfit = totalPlayerBets - totalPlayerGrossPayout;
+    const dealerNewBalance = Math.max(0, dealer.points + dealerNetProfit);
+
+    playerSettlements.push({
+      playerId: dealerId,
+      nickname: dealer.nickname,
+      avatarId: dealer.avatarId,
+      totalBet: totalPlayerBets,
+      grossPayout: totalPlayerGrossPayout,
+      netProfit: dealerNetProfit,
+      winningSymbols: [],
+      newBalance: dealerNewBalance,
+      isDealer: true,
+    });
+  }
 
   // Compute final board summary
   const boardSummary = summarizeBoardBets(settledBets, undefined, players);

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DEFAULT_AVATARS, Player, RoomSummary } from '@/types';
+import { DEFAULT_AVATARS, DealerType, Player, RoomSummary } from '@/types';
 import { sound } from '@/lib/sound';
-import { Plus, Users, Lock, RefreshCw, KeyRound, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Plus, Users, Lock, RefreshCw, KeyRound, Bot, Crown, Volume2, VolumeX } from 'lucide-react';
 
 interface LobbyProps {
   player: Player | null;
@@ -14,6 +14,7 @@ interface LobbyProps {
     isPrivate: boolean;
     passcode?: string;
     maxPlayers: number;
+    dealerType: DealerType;
   }) => void;
   onJoinRoom: (roomIdOrCode: string, passcode?: string) => void;
   onRefreshRooms: () => void;
@@ -36,6 +37,7 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   // Create room inputs
   const [roomName, setRoomName] = useState('Phòng Hội Xuân');
+  const [dealerType, setDealerType] = useState<DealerType>('bot');
   const [isPrivate, setIsPrivate] = useState(false);
   const [passcode, setPasscode] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(30);
@@ -64,6 +66,7 @@ export const Lobby: React.FC<LobbyProps> = ({
       isPrivate,
       passcode: isPrivate ? passcode : undefined,
       maxPlayers,
+      dealerType,
     });
     setShowCreateModal(false);
   };
@@ -98,12 +101,12 @@ export const Lobby: React.FC<LobbyProps> = ({
       </div>
 
       {/* Game Branding Header */}
-      <div className="flex flex-col items-center my-4 text-center">
-        <div className="relative w-44 sm:w-56 mb-2">
+      <div className="flex flex-col items-center my-3 text-center">
+        <div className="relative w-72 sm:w-96 md:w-[440px] mb-2.5 rounded-2xl overflow-hidden border border-amber-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.85),0_0_25px_rgba(245,158,11,0.3)]">
           <img
             src="/assets/01_branding/logo_bau_cua_online.png"
             alt="Logo Bầu Cua Online"
-            className="w-full h-auto drop-shadow-[0_8px_16px_rgba(245,158,11,0.5)]"
+            className="w-full h-auto block select-none pointer-events-none"
           />
         </div>
         <p className="text-xs sm:text-sm text-amber-200/90 font-medium max-w-md">
@@ -174,9 +177,20 @@ export const Lobby: React.FC<LobbyProps> = ({
         </form>
       </div>
 
-      {/* Action Buttons: Create Room & Join by Code */}
-      <div className="flex items-center justify-between w-full mb-3 gap-2">
-        <div className="flex items-center gap-2">
+      {/* Action Buttons: Quick Join Bot, Create Room & Join by Code */}
+      <div className="flex flex-wrap items-center justify-between w-full mb-3 gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              sound.playChip();
+              onJoinRoom('BAUCUA');
+            }}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 via-amber-500 to-red-600 hover:from-red-500 hover:to-amber-400 text-white font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-royal border border-amber-300/50 transition active:scale-95"
+          >
+            <Bot size={16} />
+            <span>Chơi Với Bot (Mặc Định)</span>
+          </button>
+
           <button
             onClick={() => {
               sound.playChip();
@@ -242,16 +256,30 @@ export const Lobby: React.FC<LobbyProps> = ({
                 className="bg-black/40 hover:bg-black/60 border border-amber-500/30 hover:border-amber-400 rounded-2xl p-3 flex items-center justify-between transition shadow"
               >
                 <div className="flex flex-col min-w-0 pr-2">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-extrabold text-amber-200 text-sm truncate">
                       {r.name}
                     </span>
+                    {r.isDefault && (
+                      <span className="bg-amber-500/20 text-amber-300 border border-amber-400/50 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                        Mặc định
+                      </span>
+                    )}
+                    {r.dealerType === 'bot' ? (
+                      <span className="bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                        🤖 Bot làm Cái
+                      </span>
+                    ) : (
+                      <span className="bg-red-900/60 text-amber-300 border border-amber-500/40 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                        👑 Chủ phòng làm Cái
+                      </span>
+                    )}
                     {r.isPrivate && <Lock size={12} className="text-amber-400 shrink-0" />}
                   </div>
                   <div className="flex items-center space-x-2 text-[11px] text-amber-400/80 mt-1">
                     <span>Mã: <strong className="font-mono text-amber-300">{r.code}</strong></span>
                     <span>•</span>
-                    <span>Host: {r.hostNickname}</span>
+                    <span>Nhà cái: {r.hostNickname}</span>
                     <span>•</span>
                     <span className="font-semibold">{r.playerCount}/{r.maxPlayers} người</span>
                   </div>
@@ -290,6 +318,55 @@ export const Lobby: React.FC<LobbyProps> = ({
                   className="w-full bg-black/60 border border-amber-500/50 rounded-xl px-3 py-2 text-sm text-amber-100 focus:outline-none focus:border-amber-400"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="text-xs text-amber-300 font-bold block mb-1.5">
+                  Chế độ Nhà Cái (Ai làm Cái?):
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playChip();
+                      setDealerType('bot');
+                    }}
+                    className={`flex flex-col items-start p-3 rounded-2xl border-2 text-left transition ${
+                      dealerType === 'bot'
+                        ? 'bg-emerald-950/70 border-emerald-400 ring-2 ring-emerald-400/30'
+                        : 'bg-black/40 border-amber-700/40 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-black text-xs text-emerald-300 mb-1">
+                      <Bot size={15} />
+                      <span>Bot làm Nhà Cái</span>
+                    </div>
+                    <p className="text-[11px] text-amber-100/80 leading-snug">
+                      Bot làm Cái giữ quỹ. Bạn và mọi người vào phòng cùng đặt cược với Bot.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playChip();
+                      setDealerType('player');
+                    }}
+                    className={`flex flex-col items-start p-3 rounded-2xl border-2 text-left transition ${
+                      dealerType === 'player'
+                        ? 'bg-amber-950/70 border-amber-400 ring-2 ring-amber-400/30'
+                        : 'bg-black/40 border-amber-700/40 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-black text-xs text-amber-300 mb-1">
+                      <Crown size={15} />
+                      <span>Mình làm Nhà Cái</span>
+                    </div>
+                    <p className="text-[11px] text-amber-100/80 leading-snug">
+                      Bạn làm Chủ phòng kiêm Nhà Cái: dùng xu của mình trả người thắng & ăn tiền người thua.
+                    </p>
+                  </button>
+                </div>
               </div>
 
               <div>

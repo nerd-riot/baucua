@@ -3,6 +3,7 @@ export type LedgerEntryType =
   | 'BET_RESERVE'
   | 'BET_REFUND'
   | 'ROUND_PAYOUT'
+  | 'DEALER_SETTLEMENT'
   | 'BONUS_RELOAD';
 
 export interface LedgerEntry {

@@ -4,13 +4,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ALL_SYMBOLS, BoardBetSummary, Player, Room, SYMBOLS, SymbolId } from '@/types';
 import { sound } from '@/lib/sound';
-import { Sparkles, Zap, Users, X } from 'lucide-react';
+import { Sparkles, Zap, Users, X, Crown, RotateCcw } from 'lucide-react';
 
 interface GameBoardProps {
   room: Room;
   currentPlayer: Player;
   boardSummary: BoardBetSummary[];
   onPlaceBet: (symbol: SymbolId, amount: number) => void;
+  onCancelBets?: (symbol?: SymbolId) => void;
 }
 
 const CHIP_VALUES = [10, 50, 100, 500];
@@ -32,11 +33,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   currentPlayer,
   boardSummary,
   onPlaceBet,
+  onCancelBets,
 }) => {
   const [selectedChip, setSelectedChip] = useState<number>(50);
   const [selectedBettorsSymbol, setSelectedBettorsSymbol] = useState<SymbolId | null>(null);
-  const isBetting = room.currentRound.state === 'BETTING';
+  const isPlayerDealer = room.dealerType === 'player' && room.hostId === currentPlayer.id;
+  const isBetting = room.currentRound.state === 'BETTING' && !isPlayerDealer;
   const diceResult = room.currentRound.diceResult;
+  const totalBoardBets = boardSummary.reduce((sum, item) => sum + item.totalAmount, 0);
+  const getSummary = (symbol: SymbolId): BoardBetSummary => {
+    const found = boardSummary.find((s) => s.symbol === symbol);
+    if (!found) {
+      return {
+        symbol,
+        totalAmount: 0,
+        playerCount: 0,
+        myAmount: 0,
+        bettors: [],
+      };
+    }
+    const myBetFromBettors = found.bettors?.find((b) => b.playerId === currentPlayer.id)?.amount;
+    return {
+      ...found,
+      myAmount: myBetFromBettors !== undefined ? myBetFromBettors : found.myAmount,
+    };
+  };
+
+  const myTotalBets = ALL_SYMBOLS.reduce((sum, sym) => sum + getSummary(sym).myAmount, 0);
 
   // Neon Border Chase state
   const [activeChaseSymbol, setActiveChaseSymbol] = useState<SymbolId | null>(null);
@@ -75,18 +98,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   }, [room.currentRound.id, room.currentRound.state]);
 
-  const getSummary = (symbol: SymbolId): BoardBetSummary => {
-    return (
-      boardSummary.find((s) => s.symbol === symbol) || {
-        symbol,
-        totalAmount: 0,
-        playerCount: 0,
-        myAmount: 0,
-        bettors: [],
-      }
-    );
-  };
-
   const getSymbolImage = (id: SymbolId) => {
     const map: Record<SymbolId, string> = {
       [SymbolId.BAU]: '/assets/bau.jpg',
@@ -110,55 +121,89 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const handleCardClick = (symbol: SymbolId) => {
-    if (!isBetting) return;
-    if (currentPlayer.points < selectedChip) {
-      alert('Bạn không đủ điểm để đặt mức cược này! Hãy nhấn dấu (+) ở góc trên để nạp thêm điểm miễn phí.');
+    if (isPlayerDealer) {
+      const summary = getSummary(symbol);
+      if (summary.playerCount > 0) {
+        sound.playChip();
+        setSelectedBettorsSymbol(selectedBettorsSymbol === symbol ? null : symbol);
+      }
       return;
     }
+    if (!isBetting) return;
     sound.playChip();
     onPlaceBet(symbol, selectedChip);
   };
 
   return (
     <div className="w-full flex flex-col items-center flex-1 min-h-0 select-none overflow-hidden">
-      {/* Chip Selector Bar */}
-      <div className="flex items-center justify-center space-x-2.5 sm:space-x-4 py-1.5 px-3.5 mb-1.5 bg-black/60 rounded-full border border-amber-500/40 shadow-royal shrink-0">
-        <span className="text-xs font-bold text-amber-200 hidden xs:inline">
-          Chọn mệnh giá:
-        </span>
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          {CHIP_VALUES.map((val) => {
-            const isSelected = selectedChip === val;
-            return (
-              <motion.button
-                key={val}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  sound.playChip();
-                  setSelectedChip(val);
-                }}
-                className={`relative flex items-center justify-center rounded-full transition ${
-                  isSelected
-                    ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-black scale-105'
-                    : 'opacity-75 hover:opacity-100'
-                }`}
-              >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-lg border border-amber-300/60 bg-amber-900">
-                  <img
-                    src={getChipImage(val)}
-                    alt={`Chip ${val}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="absolute text-[10px] sm:text-[11px] font-black text-amber-100 drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.9)]">
-                  {val}
-                </span>
-              </motion.button>
-            );
-          })}
+      {/* Chip Selector Bar or Dealer Info Banner */}
+      {isPlayerDealer ? (
+        <div className="flex flex-wrap items-center justify-center gap-2 py-2 px-4 mb-1.5 bg-gradient-to-r from-amber-950/90 via-red-950/90 to-amber-950/90 rounded-full border border-amber-400/60 shadow-royal shrink-0 text-xs">
+          <span className="font-black text-amber-300 flex items-center gap-1">
+            <Crown size={14} className="text-amber-400" />
+            Bạn đang làm Nhà Cái:
+          </span>
+          <span className="text-amber-100/90 font-semibold">
+            Ăn tiền người thua & trả thưởng người thắng từ quỹ điểm của bạn
+          </span>
+          <span className="bg-black/60 text-amber-300 font-mono font-black px-2.5 py-0.5 rounded-full border border-amber-500/40">
+            Làng đặt: {totalBoardBets.toLocaleString()} pts
+          </span>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center justify-center space-x-2.5 sm:space-x-4 py-1.5 px-3.5 mb-1.5 bg-black/60 rounded-full border border-amber-500/40 shadow-royal shrink-0">
+          <span className="text-xs font-bold text-amber-200 hidden xs:inline">
+            Chọn mệnh giá:
+          </span>
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {CHIP_VALUES.map((val) => {
+              const isSelected = selectedChip === val;
+              return (
+                <motion.button
+                  key={val}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    sound.playChip();
+                    setSelectedChip(val);
+                  }}
+                  className={`relative flex items-center justify-center rounded-full transition ${
+                    isSelected
+                      ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-black scale-105'
+                      : 'opacity-75 hover:opacity-100'
+                  }`}
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shadow-lg border border-amber-300/60 bg-amber-900">
+                    <img
+                      src={getChipImage(val)}
+                      alt={`Chip ${val}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="absolute text-[10px] sm:text-[11px] font-black text-amber-100 drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.9)]">
+                    {val}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {isBetting && myTotalBets > 0 && onCancelBets && (
+            <button
+              type="button"
+              onClick={() => {
+                sound.playChip();
+                onCancelBets();
+              }}
+              className="flex items-center gap-1 bg-red-800/90 hover:bg-red-700 text-amber-100 border border-amber-400/50 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black shadow transition active:scale-95 ml-1"
+              title="Rút lại toàn bộ điểm đã đặt cược trên bàn"
+            >
+              <RotateCcw size={12} />
+              <span>Rút hết ({myTotalBets})</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 6 Animals Grid (2 rows x 3 columns) - Fills Available Height */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full flex-1 min-h-0">
@@ -206,14 +251,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               )}
 
               {/* Title Header */}
-              <div className="w-full flex items-center justify-between mb-0.5 px-0.5 shrink-0">
+              <div className="w-full flex items-center justify-between mb-0.5 px-0.5 shrink-0 gap-1">
                 <span className="text-[11px] sm:text-xs md:text-sm font-black tracking-wider uppercase text-amber-300 flex items-center gap-1">
                   {meta.nameVi}
                 </span>
                 {summary.myAmount > 0 && (
-                  <span className="bg-emerald-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full shadow border border-emerald-400/60">
-                    Cược: {summary.myAmount}
-                  </span>
+                  <div className="flex items-center gap-1 z-30">
+                    <span className="bg-emerald-600 text-white text-[9px] sm:text-[11px] font-black px-2 py-0.5 rounded-full shadow border border-emerald-300/80">
+                      Bạn đặt: {summary.myAmount}
+                    </span>
+                    {isBetting && onCancelBets && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          sound.playChip();
+                          onCancelBets(symbol);
+                        }}
+                        className="bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white text-[9px] sm:text-[11px] font-black px-2 py-0.5 rounded-full shadow-lg border border-amber-200 flex items-center gap-1 transition active:scale-90 cursor-pointer"
+                        title={`Rút lại ${summary.myAmount} điểm cược ô ${meta.nameVi}`}
+                      >
+                        <RotateCcw size={10} />
+                        <span>Rút lại</span>
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
 

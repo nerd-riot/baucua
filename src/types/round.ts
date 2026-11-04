@@ -17,6 +17,7 @@ export interface PlayerSettlement {
   netProfit: number;
   winningSymbols: SymbolId[];
   newBalance: number;
+  isDealer?: boolean;
 }
 
 export interface Round {

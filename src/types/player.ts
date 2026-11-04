@@ -6,6 +6,7 @@ export interface Player {
   deviceId: string;
   isReady: boolean;
   isHost: boolean;
+  isBot?: boolean;
   connected: boolean;
   joinedAt: number;
   lastActiveAt: number;

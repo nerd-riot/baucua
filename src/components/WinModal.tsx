@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerSettlement, Round, SYMBOLS, SymbolId } from '@/types';
@@ -10,6 +10,8 @@ import { Trophy, Award, X } from 'lucide-react';
 interface WinModalProps {
   round: Round;
   currentUserId: string;
+  isPlayerDealer?: boolean;
+  isBotRoom?: boolean;
   isManualReview?: boolean;
   onClose: () => void;
 }
@@ -20,23 +22,46 @@ const playedSoundRounds = new Set<string>();
 export const WinModal: React.FC<WinModalProps> = ({
   round,
   currentUserId,
+  isPlayerDealer = false,
+  isBotRoom = false,
   isManualReview = false,
   onClose,
 }) => {
+  const [remainingSecs, setRemainingSecs] = useState<number>(0);
+
+  useEffect(() => {
+    if (!isBotRoom || !round.settledAt) {
+      setRemainingSecs(0);
+      return;
+    }
+    const updateTimer = () => {
+      const left = Math.max(0, Math.ceil((round.settledAt! + 14000 - Date.now()) / 1000));
+      setRemainingSecs(left);
+    };
+    updateTimer();
+    const interval = setInterval(updateTimer, 400);
+    return () => clearInterval(interval);
+  }, [isBotRoom, round.settledAt]);
   const settlements = round.settlements || [];
   const mySettlement: PlayerSettlement | undefined = settlements.find(
     (s) => s.playerId === currentUserId
   );
 
-  // Priority rule: If user hit ANY winning symbol (or grossPayout > 0), prioritize victory!
-  const hasWonAny = Boolean(
-    mySettlement && (mySettlement.grossPayout > 0 || (mySettlement.winningSymbols && mySettlement.winningSymbols.length > 0))
-  );
+  const isDealer = Boolean(mySettlement?.isDealer || isPlayerDealer);
 
-  // Only consider loss if user bet and hit NOTHING
-  const hasLostAll = Boolean(
-    mySettlement && mySettlement.totalBet > 0 && mySettlement.grossPayout === 0
-  );
+  // Priority rule: If user hit ANY winning symbol (or grossPayout > 0), or if Dealer had netProfit > 0, prioritize victory!
+  const hasWonAny = isDealer
+    ? Boolean(mySettlement && mySettlement.netProfit > 0)
+    : Boolean(
+        mySettlement &&
+          (mySettlement.grossPayout > 0 ||
+            (mySettlement.winningSymbols && mySettlement.winningSymbols.length > 0))
+      );
+
+  // Loss condition
+  const hasLostAll = isDealer
+    ? Boolean(mySettlement && mySettlement.netProfit < 0)
+    : Boolean(mySettlement && mySettlement.totalBet > 0 && mySettlement.grossPayout === 0);
 
   useEffect(() => {
     // Requirement 3: Viewing results manually (xem lại kết quả) must NOT play sound effects
@@ -112,7 +137,13 @@ export const WinModal: React.FC<WinModalProps> = ({
 
           {/* Title */}
           <h2 className="text-xl sm:text-2xl font-black text-gold-gradient uppercase tracking-wide">
-            {hasWonAny ? 'Chúc Mừng Chiến Thắng!' : 'Kết Quả Ván Đấu'}
+            {isDealer
+              ? hasWonAny
+                ? 'Nhà Cái Thắng Lớn!'
+                : 'Kết Quả Nhà Cái'
+              : hasWonAny
+              ? 'Chúc Mừng Chiến Thắng!'
+              : 'Kết Quả Ván Đấu'}
           </h2>
 
           {/* Rolled Dice Showcase - Large & Beautiful 3D Mascots */}
@@ -141,38 +172,78 @@ export const WinModal: React.FC<WinModalProps> = ({
             </div>
           )}
 
-          {/* Profit Breakdown if bet placed */}
+          {/* Profit Breakdown if bet placed or dealer settled */}
           {mySettlement ? (
-            <div className="bg-black/40 rounded-2xl border border-amber-500/30 p-3 my-3 space-y-1.5 text-xs sm:text-sm">
-              <div className="flex justify-between text-amber-200/80">
-                <span>Tổng cược:</span>
-                <span className="font-bold text-amber-100">
-                  {mySettlement.totalBet.toLocaleString()} pts
-                </span>
+            isDealer ? (
+              <div className="bg-black/40 rounded-2xl border border-amber-500/30 p-3 my-3 space-y-1.5 text-xs sm:text-sm">
+                <div className="flex justify-between text-amber-200/80">
+                  <span>Tổng tiền làng đặt cược:</span>
+                  <span className="font-bold text-amber-100">
+                    +{mySettlement.totalBet.toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="flex justify-between text-amber-200/80">
+                  <span>Tổng trả thưởng người thắng:</span>
+                  <span className="font-bold text-red-400">
+                    -{mySettlement.grossPayout.toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-amber-500/20 pt-1.5 font-bold">
+                  <span className="text-amber-300">Lãi / Lỗ Nhà Cái:</span>
+                  <span
+                    className={
+                      mySettlement.netProfit > 0
+                        ? 'text-emerald-400 font-extrabold text-base'
+                        : mySettlement.netProfit < 0
+                        ? 'text-red-400 font-semibold'
+                        : 'text-amber-200 font-semibold'
+                    }
+                  >
+                    {mySettlement.netProfit > 0 ? '+' : ''}
+                    {mySettlement.netProfit.toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="flex justify-between text-amber-200/80 text-xs pt-0.5">
+                  <span>Số dư hiện tại:</span>
+                  <span className="font-mono font-bold text-amber-300">
+                    {mySettlement.newBalance.toLocaleString()} pts
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between text-amber-200/80">
-                <span>Tổng nhận lại (Gross):</span>
-                <span className="font-bold text-emerald-400">
-                  +{mySettlement.grossPayout.toLocaleString()} pts
-                </span>
+            ) : (
+              <div className="bg-black/40 rounded-2xl border border-amber-500/30 p-3 my-3 space-y-1.5 text-xs sm:text-sm">
+                <div className="flex justify-between text-amber-200/80">
+                  <span>Tổng cược:</span>
+                  <span className="font-bold text-amber-100">
+                    {mySettlement.totalBet.toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="flex justify-between text-amber-200/80">
+                  <span>Tổng nhận lại (Gross):</span>
+                  <span className="font-bold text-emerald-400">
+                    +{mySettlement.grossPayout.toLocaleString()} pts
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-amber-500/20 pt-1.5 font-bold">
+                  <span className="text-amber-300">Lãi ròng (Net Profit):</span>
+                  <span
+                    className={
+                      mySettlement.netProfit > 0
+                        ? 'text-emerald-400 font-extrabold text-base'
+                        : 'text-red-400 font-semibold'
+                    }
+                  >
+                    {mySettlement.netProfit > 0 ? '+' : ''}
+                    {mySettlement.netProfit.toLocaleString()} pts
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between border-t border-amber-500/20 pt-1.5 font-bold">
-                <span className="text-amber-300">Lãi ròng (Net Profit):</span>
-                <span
-                  className={
-                    mySettlement.netProfit > 0
-                      ? 'text-emerald-400 font-extrabold text-base'
-                      : 'text-red-400 font-semibold'
-                  }
-                >
-                  {mySettlement.netProfit > 0 ? '+' : ''}
-                  {mySettlement.netProfit.toLocaleString()} pts
-                </span>
-              </div>
-            </div>
+            )
           ) : (
             <p className="text-xs text-amber-300/70 my-3">
-              Bạn chưa tham gia đặt cược trong ván này.
+              {isPlayerDealer
+                ? 'Chưa có người chơi nào đặt cược trong ván này.'
+                : 'Bạn chưa tham gia đặt cược trong ván này.'}
             </p>
           )}
 
@@ -184,7 +255,9 @@ export const WinModal: React.FC<WinModalProps> = ({
             }}
             className="w-full mt-2 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-red-950 font-black py-2.5 rounded-xl shadow-lg transition active:scale-95 text-sm sm:text-base uppercase tracking-wider"
           >
-            Tiếp Tục Chơi
+            {isBotRoom && remainingSecs > 0
+              ? `Tiếp Tục Chơi (${remainingSecs}s)`
+              : 'Tiếp Tục Chơi'}
           </button>
         </motion.div>
       </div>

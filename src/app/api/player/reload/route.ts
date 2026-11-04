@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const { deviceId } = body;
 
     const store = getRoomStore();
-    const { newBalance } = store.getLedger().reloadPoints(deviceId || 'dev_guest', 1000);
+    const newBalance = store.reloadPlayerPoints(deviceId || 'dev_guest', 1000);
 
     return NextResponse.json({ success: true, newBalance });
   } catch (err: unknown) {

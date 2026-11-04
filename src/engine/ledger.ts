@@ -92,6 +92,34 @@ export class LedgerManager {
   }
 
   /**
+   * Refunds reserved bet points back to the player when they cancel/withdraw a bet
+   * while the betting window is still open.
+   */
+  public refundBet(
+    playerId: string,
+    roomId: string,
+    roundId: string,
+    refundAmount: number
+  ): { newBalance: number; entry: LedgerEntry } {
+    const account = this.getOrCreateAccount(playerId);
+    account.points += refundAmount;
+
+    const entry: LedgerEntry = {
+      id: crypto.randomUUID(),
+      playerId,
+      roomId,
+      roundId,
+      type: 'BET_REFUND',
+      amount: refundAmount,
+      balanceAfter: account.points,
+      createdAt: Date.now(),
+    };
+
+    account.entries.push(entry);
+    return { newBalance: account.points, entry };
+  }
+
+  /**
    * Credits payout to a player after round settlement.
    */
   public creditPayout(
@@ -116,6 +144,41 @@ export class LedgerManager {
       roundId,
       type: 'ROUND_PAYOUT',
       amount: grossPayout,
+      balanceAfter: account.points,
+      metadata: { netProfit },
+      createdAt: Date.now(),
+    };
+
+    account.entries.push(entry);
+    return { newBalance: account.points, entry };
+  }
+
+  /**
+   * Settles the dealer's (host's) net profit or loss for a round.
+   * Positive netProfit means the dealer earned points from losing player bets.
+   * Negative netProfit means the dealer paid points out of their balance to winning players.
+   */
+  public settleDealerRound(
+    playerId: string,
+    roomId: string,
+    roundId: string,
+    netProfit: number
+  ): { newBalance: number; entry?: LedgerEntry } {
+    const account = this.getOrCreateAccount(playerId);
+
+    if (netProfit === 0) {
+      return { newBalance: account.points };
+    }
+
+    account.points = Math.max(0, account.points + netProfit);
+
+    const entry: LedgerEntry = {
+      id: crypto.randomUUID(),
+      playerId,
+      roomId,
+      roundId,
+      type: 'DEALER_SETTLEMENT',
+      amount: netProfit,
       balanceAfter: account.points,
       metadata: { netProfit },
       createdAt: Date.now(),

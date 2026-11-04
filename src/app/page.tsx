@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   BoardBetSummary,
   ChatMessage,
+  DealerType,
   DiceResult,
   Player,
   PlayerSettlement,
@@ -20,6 +21,7 @@ import { GameBoard } from '@/components/GameBoard';
 import { PlayerList } from '@/components/PlayerList';
 import { ChatBox } from '@/components/ChatBox';
 import { WinModal } from '@/components/WinModal';
+import { AppNotification, NotificationToast } from '@/components/NotificationToast';
 
 export default function Home() {
   const [player, setPlayer] = useState<Player | null>(null);
@@ -29,8 +31,43 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showWinModal, setShowWinModal] = useState<boolean>(false);
   const [isManualReview, setIsManualReview] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const winModalTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const shownWinModalRoundIdRef = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState<'game' | 'players' | 'chat'>('game');
+
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
+  const notify = useCallback(
+    (
+      message: string,
+      options?: {
+        type?: AppNotification['type'];
+        title?: string;
+        actionLabel?: string;
+        onAction?: () => void;
+        durationMs?: number;
+      }
+    ) => {
+      const id = 'notif_' + Math.random().toString(36).substring(2, 9);
+      const entry: AppNotification = {
+        id,
+        type: options?.type || 'error',
+        title: options?.title,
+        message,
+        actionLabel: options?.actionLabel,
+        onAction: options?.onAction,
+      };
+      setNotifications((prev) => [...prev.slice(-2), entry]);
+      const duration = options?.durationMs ?? 4500;
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
+      }, duration);
+    },
+    []
+  );
 
   // Load guest profile from localStorage
   useEffect(() => {
@@ -93,6 +130,24 @@ export default function Home() {
 
         if (player && syncedRoom.players[player.id]) {
           setPlayer((prev) => (prev ? { ...prev, points: syncedRoom.players[player.id].points } : null));
+        }
+
+        if (
+          syncedRoom.currentRound.state === 'REVEALED' &&
+          shownWinModalRoundIdRef.current !== syncedRoom.currentRound.id
+        ) {
+          shownWinModalRoundIdRef.current = syncedRoom.currentRound.id;
+          if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
+          winModalTimerRef.current = setTimeout(() => {
+            setIsManualReview(false);
+            setShowWinModal(true);
+          }, 2200);
+        } else if (syncedRoom.currentRound.state !== 'REVEALED') {
+          if (winModalTimerRef.current) {
+            clearTimeout(winModalTimerRef.current);
+            winModalTimerRef.current = null;
+          }
+          setShowWinModal(false);
         }
       },
       onPlayerJoined: (newPlayer) => {
@@ -159,7 +214,7 @@ export default function Home() {
           };
         });
       },
-      onSettled: ({ diceResult, settlements, boardSummary: finalSummary }) => {
+      onSettled: ({ roundId, diceResult, settlements, boardSummary: finalSummary }) => {
         setBoardSummary(finalSummary);
         setRoom((prev) => {
           if (!prev) return null;
@@ -168,6 +223,7 @@ export default function Home() {
             currentRound: {
               ...prev.currentRound,
               state: 'REVEALED',
+              settledAt: Date.now(),
               diceResult,
               settlements,
             },
@@ -181,12 +237,15 @@ export default function Home() {
           }
         }
 
-        // Suspense timing: wait 5s after bowl reveal before opening WinModal
-        if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
-        winModalTimerRef.current = setTimeout(() => {
-          setIsManualReview(false);
-          setShowWinModal(true);
-        }, 5000);
+        // Open WinModal 2.2s after bowl reveal (giving ~12s to view results before next round)
+        if (shownWinModalRoundIdRef.current !== roundId) {
+          shownWinModalRoundIdRef.current = roundId;
+          if (winModalTimerRef.current) clearTimeout(winModalTimerRef.current);
+          winModalTimerRef.current = setTimeout(() => {
+            setIsManualReview(false);
+            setShowWinModal(true);
+          }, 2200);
+        }
       },
       onChatMessage: (msg) => {
         setChatMessages((prev) => [...prev.slice(-49), msg]);
@@ -208,11 +267,23 @@ export default function Home() {
     setPlayer((prev) => (prev ? { ...prev, nickname, avatarId } : null));
   };
 
+  const handleReloadPoints = useCallback(async () => {
+    if (!player) return;
+    const newBal = await GameClient.reloadPoints(player.deviceId);
+    setPlayer((prev) => (prev ? { ...prev, points: newBal } : null));
+    notify('Đã nạp thêm +1,000 điểm miễn phí vào tài khoản!', {
+      type: 'success',
+      title: 'Nạp Điểm Thành Công',
+      durationMs: 3000,
+    });
+  }, [player, notify]);
+
   const handleCreateRoom = async (options: {
     name: string;
     isPrivate: boolean;
     passcode?: string;
     maxPlayers: number;
+    dealerType?: DealerType;
   }) => {
     if (!player) return;
     const res = await GameClient.createRoom(
@@ -225,7 +296,10 @@ export default function Home() {
       setRoom(res.room);
       setChatMessages([]);
     } else {
-      alert(res.error || 'Tạo phòng thất bại');
+      notify(res.error || 'Tạo phòng thất bại', {
+        type: 'error',
+        title: 'Không Thể Tạo Phòng',
+      });
     }
   };
 
@@ -242,7 +316,10 @@ export default function Home() {
       setRoom(res.room);
       setChatMessages([]);
     } else {
-      alert(res.error || 'Vào phòng thất bại');
+      notify(res.error || 'Vào phòng thất bại', {
+        type: 'error',
+        title: 'Không Thể Vào Phòng',
+      });
     }
   };
 
@@ -260,40 +337,91 @@ export default function Home() {
   const handleStartRound = async () => {
     if (!room) return;
     const res = await GameClient.startRound(room.code);
-    if (!res.success) {
-      alert(res.error || 'Không thể bắt đầu vòng');
+    if (!res.success && room.dealerType !== 'bot') {
+      notify(res.error || 'Không thể bắt đầu vòng', {
+        type: 'warning',
+        title: 'Chưa Thể Mở Ván',
+        actionLabel: res.error?.includes('hết điểm') ? 'Nạp +1,000 điểm ngay' : undefined,
+        onAction: res.error?.includes('hết điểm') ? handleReloadPoints : undefined,
+      });
     }
   };
 
   const handleLockBetting = async () => {
     if (!room) return;
     const res = await GameClient.lockAndRoll(room.code);
-    if (!res.success) {
-      alert(res.error || 'Không thể khóa cược');
+    if (!res.success && room.dealerType !== 'bot') {
+      notify(res.error || 'Không thể khóa cược', {
+        type: 'warning',
+        title: 'Thông Báo',
+      });
     }
   };
 
   const handlePlaceBet = async (symbol: SymbolId, amount: number) => {
     if (!room || !player) return;
+
+    if (player.points < amount) {
+      notify(
+        `Bạn cần ${amount.toLocaleString()} pts nhưng hiện chỉ còn ${player.points.toLocaleString()} pts. Nhấn nút bên dưới hoặc dấu (+) ở góc trên để nạp miễn phí!`,
+        {
+          type: 'warning',
+          title: 'Không Đủ Điểm Đặt Cược',
+          actionLabel: 'Nạp +1,000 điểm miễn phí',
+          onAction: handleReloadPoints,
+          durationMs: 5500,
+        }
+      );
+      return;
+    }
+
     const clientBetId = crypto.randomUUID();
 
     const res = await GameClient.placeBet(room.code, player.id, symbol, amount, clientBetId);
-    if (res.success && res.newBalance !== undefined) {
-      setPlayer((prev) => (prev ? { ...prev, points: res.newBalance! } : null));
+    if (res.success) {
+      if (res.newBalance !== undefined) {
+        setPlayer((prev) => (prev ? { ...prev, points: res.newBalance! } : null));
+      }
+      if (res.boardSummary) {
+        setBoardSummary(res.boardSummary);
+      }
     } else if (res.error) {
-      alert(res.error);
+      notify(res.error, {
+        type: 'warning',
+        title: 'Không Thể Đặt Cược',
+      });
+    }
+  };
+
+  const handleCancelBets = async (symbol?: SymbolId) => {
+    if (!room || !player) return;
+    const res = await GameClient.cancelBets(room.code, player.id, symbol);
+    if (res.success) {
+      if (res.newBalance !== undefined) {
+        setPlayer((prev) => (prev ? { ...prev, points: res.newBalance! } : null));
+      }
+      if (res.boardSummary) {
+        setBoardSummary(res.boardSummary);
+      }
+      notify(
+        `Đã rút lại +${(res.refundedAmount || 0).toLocaleString()} pts về ví!`,
+        {
+          type: 'info',
+          title: 'Đã Hoàn Cược',
+          durationMs: 2200,
+        }
+      );
+    } else if (res.error) {
+      notify(res.error, {
+        type: 'warning',
+        title: 'Không Thể Rút Cược',
+      });
     }
   };
 
   const handleSendMessage = (text?: string, stickerId?: string) => {
     if (!room || !player) return;
     GameClient.sendChat(room.code, player.id, text, stickerId);
-  };
-
-  const handleReloadPoints = async () => {
-    if (!player) return;
-    const newBal = await GameClient.reloadPoints(player.deviceId);
-    setPlayer((prev) => (prev ? { ...prev, points: newBal } : null));
   };
 
   const handleRefreshRooms = async () => {
@@ -303,6 +431,7 @@ export default function Home() {
 
   return (
     <main className="h-screen max-h-screen overflow-hidden flex flex-col bg-tet-bg text-tet-silk select-none">
+      <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
       {!room ? (
         <div className="flex-1 overflow-y-auto">
           <Lobby
@@ -376,6 +505,7 @@ export default function Home() {
                   currentPlayer={player}
                   boardSummary={boardSummary}
                   onPlaceBet={handlePlaceBet}
+                  onCancelBets={handleCancelBets}
                 />
               </div>
 
@@ -403,6 +533,8 @@ export default function Home() {
               <WinModal
                 round={room.currentRound}
                 currentUserId={player.id}
+                isPlayerDealer={room.dealerType === 'player' && room.hostId === player.id}
+                isBotRoom={room.dealerType === 'bot'}
                 isManualReview={isManualReview}
                 onClose={() => setShowWinModal(false)}
               />

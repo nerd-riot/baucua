@@ -1,12 +1,15 @@
 import { Player } from './player';
 import { Round } from './round';
 
+export type DealerType = 'bot' | 'player';
+
 export interface RoomConfig {
   name: string;
   isPrivate: boolean;
   passcode?: string;
   maxPlayers: number; // 2 to 30
   betDurationSeconds: number; // default 20s
+  dealerType?: DealerType;
 }
 
 export interface Room {
@@ -14,6 +17,8 @@ export interface Room {
   code: string; // 6 uppercase alphanumeric
   name: string;
   hostId: string;
+  dealerType: DealerType;
+  isDefault?: boolean;
   isPrivate: boolean;
   passcode?: string;
   maxPlayers: number;
@@ -29,6 +34,8 @@ export interface RoomSummary {
   code: string;
   name: string;
   hostNickname: string;
+  dealerType: DealerType;
+  isDefault?: boolean;
   isPrivate: boolean;
   playerCount: number;
   maxPlayers: number;

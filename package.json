@@ -9,6 +9,9 @@
     "test": "tsx --test tests/*.test.ts",
     "lint": "next lint"
   },
+  "browserslist": [
+    "defaults"
+  ],
   "dependencies": {
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",

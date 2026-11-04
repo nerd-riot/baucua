@@ -1,6 +1,7 @@
 import {
   BoardBetSummary,
   ChatMessage,
+  DealerType,
   DiceResult,
   Player,
   PlayerSettlement,
@@ -48,6 +49,7 @@ export class GameClient {
       isPrivate: boolean;
       passcode?: string;
       maxPlayers: number;
+      dealerType?: DealerType;
     }
   ): Promise<{ success: boolean; room?: Room; player?: Player; error?: string }> {
     try {
@@ -119,7 +121,12 @@ export class GameClient {
     symbol: SymbolId,
     amount: number,
     clientBetId: string
-  ): Promise<{ success: boolean; newBalance?: number; error?: string }> {
+  ): Promise<{
+    success: boolean;
+    newBalance?: number;
+    boardSummary?: BoardBetSummary[];
+    error?: string;
+  }> {
     try {
       const res = await fetch(`/api/rooms/${code}/bet`, {
         method: 'POST',
@@ -129,6 +136,29 @@ export class GameClient {
       return await res.json();
     } catch (err: unknown) {
       return { success: false, error: 'Lỗi đặt cược' };
+    }
+  }
+
+  public static async cancelBets(
+    code: string,
+    playerId: string,
+    symbol?: SymbolId
+  ): Promise<{
+    success: boolean;
+    refundedAmount?: number;
+    newBalance?: number;
+    boardSummary?: BoardBetSummary[];
+    error?: string;
+  }> {
+    try {
+      const res = await fetch(`/api/rooms/${code}/bet`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, symbol }),
+      });
+      return await res.json();
+    } catch (err: unknown) {
+      return { success: false, error: 'Lỗi rút cược' };
     }
   }
 
